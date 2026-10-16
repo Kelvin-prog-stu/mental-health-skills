@@ -5,20 +5,20 @@ Kelvin Asiedu, IST 402. Submitted 2026-10-15.
 ## Project access
 
 - Repository: https://github.com/Kelvin-prog-stu/mental-health-skills (public)
-- Submitted commit: `{SHA}` on `main`. This report was added in the commit after it and
+- Submitted commit: `ea82f0d330285c1ec6d53f7d1e88560fc6ef7c96` on `main`. This report was added in the commit after it and
   changes nothing else.
 - No application runs yet, and Part 3.1 does not expect one. Setup and run commands will
   be added to the README in Part 3.2, once they work.
 
 | Document | What it holds |
 | --- | --- |
-| [docs/design-pipeline.md]({B}/docs/design-pipeline.md) | The design: skill choice, flow diagram, timing budget, decisions tied to R/D findings, model role and limits, crisis-input decision, data model, planned endpoints, failure behavior, open questions |
-| [docs/design/screens.png]({B}/docs/design/screens.png) ([HTML source]({B}/docs/design/screens.html)) | Screen sketch: Home, Exercise (circle and text cue), Support over a paused exercise, Done and History |
-| [README.md]({B}/README.md) | Purpose and my completed design guidelines |
-| [AGENTS.md]({B}/AGENTS.md) | The class working rules, plus section 9 with my decisions so a coding agent cannot change them silently |
-| [docs/verification.md]({B}/docs/verification.md) | What was actually checked for Part 3.1, and the checks planned for Part 3.2 |
-| [handoffs/current.md]({B}/handoffs/current.md) | State and next steps |
-| [AI-USE.md]({B}/AI-USE.md) and [prompts/01-start.md]({B}/prompts/01-start.md) | Tools, models, and the evidence log |
+| [docs/design-pipeline.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/ea82f0d330285c1ec6d53f7d1e88560fc6ef7c96/docs/design-pipeline.md) | The design: skill choice, flow diagram, timing budget, decisions tied to R/D findings, model role and limits, crisis-input decision, data model, planned endpoints, failure behavior, open questions |
+| [docs/design/screens.png](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/ea82f0d330285c1ec6d53f7d1e88560fc6ef7c96/docs/design/screens.png) ([HTML source](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/ea82f0d330285c1ec6d53f7d1e88560fc6ef7c96/docs/design/screens.html)) | Screen sketch: Home, Exercise (circle and text cue), Support over a paused exercise, Done and History |
+| [README.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/ea82f0d330285c1ec6d53f7d1e88560fc6ef7c96/README.md) | Purpose and my completed design guidelines |
+| [AGENTS.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/ea82f0d330285c1ec6d53f7d1e88560fc6ef7c96/AGENTS.md) | The class working rules, plus section 9 with my decisions so a coding agent cannot change them silently |
+| [docs/verification.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/ea82f0d330285c1ec6d53f7d1e88560fc6ef7c96/docs/verification.md) | What was actually checked for Part 3.1, and the checks planned for Part 3.2 |
+| [handoffs/current.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/ea82f0d330285c1ec6d53f7d1e88560fc6ef7c96/handoffs/current.md) | State and next steps |
+| [AI-USE.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/ea82f0d330285c1ec6d53f7d1e88560fc6ef7c96/AI-USE.md) and [prompts/01-start.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/ea82f0d330285c1ec6d53f7d1e88560fc6ef7c96/prompts/01-start.md) | Tools, models, and the evidence log |
 
 ## The proposal in brief
 
@@ -26,7 +26,7 @@ Kelvin Asiedu, IST 402. Submitted 2026-10-15.
 six breaths (60 seconds); eight (80 seconds) is the only other length. The fictional user is
 Alex, a student with a few minutes between classes.
 
-![Screen sketch]({B}/docs/design/screens.png?raw=true)
+![Screen sketch](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/ea82f0d330285c1ec6d53f7d1e88560fc6ef7c96/docs/design/screens.png?raw=true)
 
 The flow, also drawn as a diagram in the design notes:
 
@@ -117,5 +117,5 @@ Claude Code with Claude Opus 5.5 (`claude-opus-5-5`) read the course pages with 
 signed-in browser and drafted these documents from my decisions. I chose the skill, the
 model's role, and the repository. Details, prompts, and the failed and revised approaches
 (including a dropped plan to log Support use, and a rejected click-based distress signal)
-are in [AI-USE.md]({B}/AI-USE.md). No credentials or personal information appear in the
+are in [AI-USE.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/ea82f0d330285c1ec6d53f7d1e88560fc6ef7c96/AI-USE.md). No credentials or personal information appear in the
 repository.
