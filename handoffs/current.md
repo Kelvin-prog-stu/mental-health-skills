@@ -1,34 +1,31 @@
 # Current handoff
 
-Written 2026-10-15 at the end of Part 3.1. The repository is the authority; check these
-claims against the files.
+Written 2026-10-26 at the end of Part 3.2. Check these claims against the files.
 
 ## State
 
-- Branch `main`. Design only: README with design guidelines, AGENTS.md (class starter
-  plus section 9 with the decisions made), `docs/design-pipeline.md`, the sketch in
-  `docs/design/`, `docs/verification.md`, `AI-USE.md`, and the Part 3.1 report in
-  `reports/part-3-1/report.md`.
-- `frontend/`, `backend/`, and `data/` are empty placeholders. No dependencies are
-  installed, no database exists, no credentials are configured.
+- Branch `part-3-2`, merged into `main` for the Part 3.2 submission. The working app runs on
+  backend :8100 and frontend :5180 (README "Run it").
+- Working: paced breathing (6 or 8 breaths, circle or text cue), Stop, Support on every
+  screen (static, verified entries, pauses the exercise), saved sessions with measured time,
+  the optional one-tap answer, remembered choices ("Same as last time"), History, model
+  introduction with fixed-text fallback, questions about saved sessions through read-only,
+  user-scoped SQL retrieval, crisis wording blocked before any model call, Mock and Fail modes.
+- Checks run: `backend/checks/check_app.py` 28 of 28 (mock); browser checks 1 to 13 in
+  `docs/verification.md` (mock and live); a captioned demo video `docs/demo/a3-part2-demo.mp4`.
 
-## Decided
+## Next (Part 3.3, due 2026-10-29; in-class presentation Oct 27 or 29)
 
-Paced breathing 4 in, 6 out; 6 breaths (60 s) default, 8 (80 s) option. Model before
-and after only. Support button in the top bar of every screen, static, pauses the
-exercise. Details and reasons: `docs/design-pipeline.md`.
-
-## Next (Part 3.2, due 2026-10-22)
-
-1. CHECK, then ask before installing: Vue (Vite) in `frontend/`, FastAPI, httpx and
-   python-dotenv in `backend/.venv`. Reuse patterns from `expedia-lite` (Gemini client,
-   read-only retrieval, chat trace) and say what was reused.
-2. Build Home, Exercise, Stopped, Done, Support with the browser timer first; then
-   sessions in SQLite; then the model introduction with its fixed-text fallback.
-3. Verify the support entries against official sources before showing them.
-4. Run the checks listed in `docs/verification.md` and record what happened.
+1. Fifteen fictional scenarios and three behavior checks with expected and observed results;
+   mocks for routine checks, a few live repeats. Report a surprising finding and an untested limit.
+2. Use saved history more (the presentation rubric asks for profile and usage history shaping
+   the interface and the chatbot's tone); decide whether "Fewer words" should trim more screens.
+3. Figma capture round trip (Introduction to Figma and MCP) or document why an exported image
+   was used.
+4. Clean-checkout test of the README on another folder or machine; complete AI-USE.md.
+5. Process screencast: one failure, the evidence, the decision (the raw-timestamp answer or
+   the Enter-key check failure are candidates).
 
 ## Open
 
-See `docs/design-pipeline.md` section 11. Also outstanding outside this repo: the
-outside-class submission for Graded In-class Activity 3 (worth up to 7 of 10).
+`docs/design-pipeline.md` section 11 and section 13 "Not built yet".

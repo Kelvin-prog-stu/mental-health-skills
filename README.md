@@ -14,13 +14,55 @@ This is a coursework prototype, tested only with fictional scenarios. It must
 not diagnose, provide therapy, imply human monitoring, or be offered as a real
 mental health support service.
 
-## Status (Part 3.1, 2026-10-15)
+## Status (Part 3.2, 2026-10-26)
 
-Design only. There is no running application yet: the folders, this README,
-`AGENTS.md`, and the design notes exist. The design is in
-[docs/design-pipeline.md](docs/design-pipeline.md), with the screen sketch in
-[docs/design/](docs/design/). Setup and run commands will be added here only after
-they are implemented and checked (Part 3.2).
+A working version: someone can complete paced breathing in the running interface,
+stop at any moment, open Support from every screen, and look back at saved sessions.
+The model writes the Home introduction and answers questions about saved sessions.
+What is finished and what is not: [docs/verification.md](docs/verification.md) and
+[handoffs/current.md](handoffs/current.md). Design and its changes since Part 3.1:
+[docs/design-pipeline.md](docs/design-pipeline.md).
+
+## Run it (Windows, checked on this machine on 2026-10-26)
+
+Requirements: Python 3.12, Node.js 20 or newer, Google Chrome (only for the browser check).
+
+Backend, from `backend/`:
+
+```
+py -3.12 -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+copy .env.example .env
+```
+
+Put a Gemini key after `GEMINI_API_KEY=` in `backend/.env` (it is ignored by Git). Without a
+key the app still runs: the introduction falls back to fixed text and questions report that
+the model is not configured. Then start it:
+
+```
+.venv\Scripts\python.exe -m uvicorn main:app --port 8100
+```
+
+Frontend, from `frontend/`:
+
+```
+npm install
+npm run dev
+```
+
+Open http://localhost:5180. The database is created at `data/app.sqlite3` on first start
+(fictional data only; not committed). Stop either server with Ctrl+C.
+
+Checks:
+
+- `backend\.venv\Scripts\python.exe backend\checks\check_app.py`: 28 backend checks with the
+  mocked model on a throwaway database. No key or network needed.
+- `node docs\evidence\e2e_check.mjs <output folder>`: drives the running app in headless
+  Chrome with the mocked model and saves screenshots and a log (add `--live` for the live model).
+
+The **Demo controls** at the bottom of the page switch the model between Live, Mock (fixed
+replies), and Fail (a simulated outage). They exist for testing with fictional scenarios and
+only work when `ALLOW_DEMO_MODES=1` is set in `backend/.env`.
 
 ## Design guidelines
 
@@ -123,8 +165,8 @@ project-root/
 |-- AGENTS.md            Instructions for the coding agent
 |-- AI-USE.md            Tools, models, and the AI-use evidence log
 |-- .gitignore           Local files to exclude from Git
-|-- frontend/            Vue interface (Part 3.2)
-|-- backend/             Python/FastAPI API and application logic (Part 3.2)
+|-- frontend/            Vue interface (App.vue, components/, api.js, support.js)
+|-- backend/             FastAPI (main.py), models.py, database.py, assistant.py, retrieval.py, llm_client.py
 |-- data/                Local SQLite database and fictional fixtures
 |-- docs/
 |   |-- design-pipeline.md  Architecture, behavior, and design decisions

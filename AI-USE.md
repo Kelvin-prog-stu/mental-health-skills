@@ -54,3 +54,36 @@ are left out.
 5. **Rejected: a gentler 3-in, 5-out option.** It would suit some people, but it
    changes the skill as the assignment specifies it (4 in, 6 out), and the assignment
    says to keep the skill's steps intact. Left as open question 3.
+
+### Part 3.2 (2026-10-26)
+
+Tool and model for this part: Claude Code with Claude Opus 5.5 (`claude-opus-5-5`) built the
+app, the checks, the evidence, and the report after I asked it to "go into canvas and complete
+the assignment due today". It read the Canvas assignment and the presentation rubric through my
+signed-in Chrome. The app's own model is Gemini `gemini-3.5-flash-lite`.
+
+Reused from my Assignment 2 project (`Kelvin-prog-stu/expedia-lite`): the Gemini client
+(`backend/llm_client.py`, timeout shortened), and the read-only SQL guard, adapted into
+`backend/retrieval.py` with user-scoped views. The browser check is adapted from the
+headless-Chrome scripts used in that project.
+
+6. **Failed approach: mock replies never matched.** The first mock model compared the full
+   system prompt to decide which reply to give. The query prompt has the schema substituted
+   in, so it never matched and every mocked question "failed". Evidence: a smoke run where
+   all four mock questions came back `failed`. **Fix:** the caller now passes the stage name
+   ("intro", "query", "answer") to the mock.
+7. **Failed approach: the browser check could not press Start.** A synthetic Enter key event
+   without a `text` field does not activate a focused button, so the check timed out waiting
+   for the exercise. The app was fine; the check was wrong. **Fix:** send Enter with its text,
+   as a real key press does.
+8. **Revised prompt: raw timestamps.** The live model answered "The last one ended at
+   2026-10-26T21:49:56.753+00:00." I added one rule to the answer section of the prompt
+   (short day and month). The rerun answered "ended on Oct 26." Evidence:
+   `docs/evidence/live-model-calls.md`.
+9. **Revised design: introduction without retrieval.** The design planned to use the SQL
+   retrieval step for the introduction too. It always needs the same two facts, so the app
+   now passes them directly and saves one model call per page load. Recorded in
+   `docs/design-pipeline.md` section 13.
+10. **Shell edits broke Python strings.** Generating Python through shell heredocs turned
+    `\n` escapes into real line breaks twice. The agent switched to editing files with its
+    file tools and checked each file parses.
