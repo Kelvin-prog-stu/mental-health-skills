@@ -112,19 +112,21 @@ onMounted(load)
 </template>
 
 <style scoped>
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; background: #fff; font-size: 0.92rem; }
-th, td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--line); }
+h2 { font-family: Georgia, serif; font-weight: 400; font-size: 1.6rem; margin: 0.4rem 0 0.8rem; }
+.table-wrap { overflow-x: auto; background: #fff; border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); }
+table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+th, td { text-align: left; padding: 0.7rem 0.8rem; border-bottom: 1px solid var(--line); }
+tbody tr:last-child td { border-bottom: 0; }
 th { color: var(--muted); font-weight: 600; }
-.ask-title { margin-top: 1.6rem; font-size: 1.1rem; }
+.ask-title { margin-top: 1.8rem; font-size: 1.3rem; }
 .ask { display: flex; gap: 0.5rem; }
-.ask input { flex: 1; min-width: 0; padding: 0.7rem; border: 1px solid var(--line-strong); border-radius: 10px; font: inherit; }
-.reply { margin-top: 0.8rem; padding: 0.8rem 1rem; background: #fff; border-left: 4px solid var(--cue-edge); border-radius: 8px; }
+.ask input { flex: 1; min-width: 0; min-height: 52px; padding: 0.7rem 1rem; border: 1px solid var(--line-strong); border-radius: 16px; font: inherit; background: #fff; }
+.reply { margin-top: 0.8rem; padding: 0.9rem 1.1rem; background: #fff; border-left: 4px solid var(--cue-edge); border-radius: 14px; box-shadow: var(--shadow); }
 .reply.blocked, .reply.failed, .reply.rejected { border-left-color: var(--warn); }
 .reply p { margin: 0 0 0.4rem; }
 pre { white-space: pre-wrap; font-size: 0.8rem; background: var(--surface); padding: 0.5rem; border-radius: 6px; }
 .convs { list-style: none; padding: 0; display: grid; gap: 0.6rem; }
-.convs li { background: #fff; padding: 0.6rem 0.8rem; border-radius: 8px; }
+.convs li { background: #fff; padding: 0.8rem 1rem; border-radius: 14px; border: 1px solid var(--line); }
 .msg { margin: 0.2rem 0; }
 .small { font-size: 0.82rem; }
 </style>

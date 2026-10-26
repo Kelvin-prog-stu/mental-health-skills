@@ -87,3 +87,8 @@ headless-Chrome scripts used in that project.
 10. **Shell edits broke Python strings.** Generating Python through shell heredocs turned
     `\n` escapes into real line breaks twice. The agent switched to editing files with its
     file tools and checked each file parses.
+11. **Revised visual design.** After the first build I said it looked bland and asked for something people of
+    every age would want to use. The agent restyled it within the D6 limits (calm palette, a soft breathing
+    orb, bigger type and touch targets), then caught two layout problems in the browser and fixed them: the
+    orb pushed the breath counter under the header on a short window, and the Support panel ran past the
+    bottom of the screen. All checks were rerun afterwards.

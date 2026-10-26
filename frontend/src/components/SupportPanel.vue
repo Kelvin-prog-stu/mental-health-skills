@@ -35,12 +35,12 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.scrim { position: fixed; inset: 0; background: rgb(43 49 64 / 40%); display: grid; align-items: end; justify-items: center; z-index: 20; }
-.panel { width: min(520px, 100%); background: #fff; border-radius: 18px 18px 0 0; padding: 1.2rem 1.3rem 1.5rem; }
-h2 { margin: 0 0 0.6rem; font-size: 1.25rem; }
+.scrim { position: fixed; inset: 0; background: rgb(35 49 74 / 45%); backdrop-filter: blur(3px); display: grid; align-items: end; justify-items: center; z-index: 20; }
+.panel { width: min(540px, 100%); max-height: 92vh; overflow-y: auto; background: #fff; border-radius: 24px 24px 0 0; padding: 1.4rem 1.3rem 1.6rem; box-shadow: 0 -10px 40px -10px rgb(35 49 74 / 35%); }
+h2 { margin: 0 0 0.8rem; font-family: Georgia, serif; font-weight: 400; font-size: 1.5rem; }
 ul { list-style: none; padding: 0; margin: 0 0 0.8rem; display: grid; gap: 0.55rem; }
-li { display: grid; gap: 0.1rem; }
-li strong { font-size: 1.1rem; }
+li { display: grid; gap: 0.1rem; padding: 0.7rem 0.9rem; background: #f4f8fb; border: 1px solid #e1ebf2; border-radius: 14px; }
+li strong { font-size: 1.15rem; color: var(--brand-dark); }
 li span { color: var(--muted); font-size: 0.9rem; }
 .notice { margin: 0.3rem 0; color: var(--muted); font-size: 0.88rem; }
 .actions { display: grid; gap: 0.5rem; margin-top: 0.8rem; }

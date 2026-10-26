@@ -323,3 +323,25 @@ The Figma capture round trip; the "Fewer words" setting only hides the introduct
 notice on Home (it does not yet trim other screens); a session cut short by closing the tab is
 saved as stopped with 0 breaths when the browser lets the request out, otherwise it stays
 "in progress" and History shows "Ended early"; no speech input or output (optional, not chosen).
+
+### Visual refresh (2026-10-26, before submission)
+
+The first build was plain on purpose, but it read as bland. The refresh aims for calm rather
+than exciting, because D6 found saturated color and motion read as demand:
+
+- **Soft dawn palette:** warm sand and pale sky gradients, deep blue-gray text for strong
+  contrast, one muted peach accent. No saturated color.
+- **The breathing orb:** a soft glass-like sphere with a halo that grows and fades with the
+  breath. The word "in" or "out" sits inside it, so the eye stays in one place. The text cue
+  for reduced motion is unchanged.
+- **Typography:** a serif headline ("Take a calm minute") for warmth, and a larger 17 px base
+  font for readability at every age.
+- **Touch targets:** at least 44 to 64 px, so the controls are easy for unsteady hands and on
+  phones.
+- **Home:** a calm hero, the model's introduction in a card, one large Start button, and the
+  remembered choices shown as small pills ("Same as last time", "6 breaths", "Circle cue").
+- **Support panel:** each resource is its own card, so the number is the first thing read.
+  The panel scrolls within short screens.
+
+No behavior changed. The 28 backend checks and every browser check were rerun after the
+refresh and still pass (six breaths measured 60.0 s).
