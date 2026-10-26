@@ -28,7 +28,7 @@ Script: [e2e_check.mjs](evidence/e2e_check.mjs). MOCK run log and screenshots:
 | # | Input or action | Expected | Observed | Evidence |
 | --- | --- | --- | --- | --- |
 | 1 | Open Home, press Enter | Start is focused; Enter starts; Stop gets focus | Start focused; exercise started; Stop focused | mock log `home`, `exercise-in`; `01-home.png` |
-| 2 | Let 6 breaths run | "Breathe in" then "Breathe out"; ends on "That was 6 breaths." within 90 s | Ended at **60.0 s** measured by the app; the check's own clock saw 60.06 s | `02-exercise-inhale.png`, `03-done.png` |
+| 2 | Let 6 breaths run | "Breathe in" then "Breathe out"; ends on "That was 6 breaths." within 90 s | Ended at **60.0 s** measured by the app; the check's own clock saw 60.10 s | `02-exercise-inhale.png`, `03-done.png` |
 | 3 | Tap "Not sure" | Saved as the person's answer | "Saved: Not sure"; row in `session_feedback` | `db-inspection.txt` |
 | 4 | Text cue, open Support at breath 2, wait 4 s | Exercise pauses, panel focused, counter holds | "Breath 2 of 6 · paused" before and after 4 s; focus on the panel heading | `04-support-paused.png` |
 | 5 | Resume, then Stop | Continues; Stop ends at once; saved as stopped | "Stopped after 2 breaths. That is fine." Measured 21.7 s plus 4.5 s paused, reported apart | `05-text-cue.png`, `06-stopped.png` |

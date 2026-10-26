@@ -5,24 +5,24 @@ Kelvin Asiedu, IST 402. Submitted 2026-10-26.
 ## Project access
 
 - Repository: https://github.com/Kelvin-prog-stu/mental-health-skills (public)
-- Submitted commit: `70f1a76f68d8b442d26f594ba5bc868176b442c8` on `main` (the merge of branch `part-3-2`). This report was added
+- Submitted commit: `b89d49de650392cd34d19ef7475de963ab13ac7c` on `main` (the merge of branch `part-3-2`, including a final visual refresh). This report was added
   in the commit after it and changes nothing else.
-- Run it: [README.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/70f1a76f68d8b442d26f594ba5bc868176b442c8/README.md), section "Run it". Backend on port 8100, frontend on
+- Run it: [README.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/b89d49de650392cd34d19ef7475de963ab13ac7c/README.md), section "Run it". Backend on port 8100, frontend on
   5180, Gemini key in `backend/.env` (ignored by Git; `backend/.env.example` lists the names).
   Without a key the app still runs and says the model is not configured.
 
 | Evidence | Link |
 | --- | --- |
-| Demo video, 2:08, captioned, no audio | [docs/demo/a3-part2-demo.mp4](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/70f1a76f68d8b442d26f594ba5bc868176b442c8/docs/demo/a3-part2-demo.mp4) |
-| Verification record (expected versus observed) | [docs/verification.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/70f1a76f68d8b442d26f594ba5bc868176b442c8/docs/verification.md) |
-| Browser screenshots and logs, MOCK model | [docs/evidence/mock-run/](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/70f1a76f68d8b442d26f594ba5bc868176b442c8/docs/evidence/mock-run/) |
-| Browser screenshots and log, LIVE model | [docs/evidence/live-run/](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/70f1a76f68d8b442d26f594ba5bc868176b442c8/docs/evidence/live-run/) |
-| Live model calls compared with the database | [docs/evidence/live-model-calls.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/70f1a76f68d8b442d26f594ba5bc868176b442c8/docs/evidence/live-model-calls.md) |
-| Read-only database inspection | [docs/evidence/db-inspection.txt](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/70f1a76f68d8b442d26f594ba5bc868176b442c8/docs/evidence/db-inspection.txt) |
-| Backend checks (28, MOCK) | [backend/checks/check_app.py](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/70f1a76f68d8b442d26f594ba5bc868176b442c8/backend/checks/check_app.py) |
-| Design, endpoints as built, and changes since Part 3.1 | [docs/design-pipeline.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/70f1a76f68d8b442d26f594ba5bc868176b442c8/docs/design-pipeline.md), section 13 |
-| The model's instructions | [prompts/breathing-guide.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/70f1a76f68d8b442d26f594ba5bc868176b442c8/prompts/breathing-guide.md) |
-| AI use and evidence log | [AI-USE.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/70f1a76f68d8b442d26f594ba5bc868176b442c8/AI-USE.md) |
+| Demo video, 2:08, captioned, no audio | [docs/demo/a3-part2-demo.mp4](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/b89d49de650392cd34d19ef7475de963ab13ac7c/docs/demo/a3-part2-demo.mp4) |
+| Verification record (expected versus observed) | [docs/verification.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/b89d49de650392cd34d19ef7475de963ab13ac7c/docs/verification.md) |
+| Browser screenshots and logs, MOCK model | [docs/evidence/mock-run/](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/b89d49de650392cd34d19ef7475de963ab13ac7c/docs/evidence/mock-run/) |
+| Browser screenshots and log, LIVE model | [docs/evidence/live-run/](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/b89d49de650392cd34d19ef7475de963ab13ac7c/docs/evidence/live-run/) |
+| Live model calls compared with the database | [docs/evidence/live-model-calls.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/b89d49de650392cd34d19ef7475de963ab13ac7c/docs/evidence/live-model-calls.md) |
+| Read-only database inspection | [docs/evidence/db-inspection.txt](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/b89d49de650392cd34d19ef7475de963ab13ac7c/docs/evidence/db-inspection.txt) |
+| Backend checks (28, MOCK) | [backend/checks/check_app.py](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/b89d49de650392cd34d19ef7475de963ab13ac7c/backend/checks/check_app.py) |
+| Design, endpoints as built, and changes since Part 3.1 | [docs/design-pipeline.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/b89d49de650392cd34d19ef7475de963ab13ac7c/docs/design-pipeline.md), section 13 |
+| The model's instructions | [prompts/breathing-guide.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/b89d49de650392cd34d19ef7475de963ab13ac7c/prompts/breathing-guide.md) |
+| AI use and evidence log | [AI-USE.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/b89d49de650392cd34d19ef7475de963ab13ac7c/AI-USE.md) |
 
 ## What is complete
 
@@ -48,7 +48,7 @@ stopped sessions differently. The app remembers the last length and cue and offe
 
 | Measure | Planned | Observed |
 | --- | --- | --- |
-| Six breaths, first instruction to final line | 60 s | 60.0 s (app clock); the check's own clock saw 60.06 s |
+| Six breaths, first instruction to final line | 60 s | 60.0 s (app clock); the check's own clock saw 60.10 s |
 | Eight breaths | 80 s | not run in a recorded check |
 | App delays inside the sequence | 0 s: the timer runs in the browser and nothing waits on the network | none observed |
 | Pauses for Support | excluded | reported apart (4.5 s and 5.0 s in two runs) |
@@ -110,6 +110,7 @@ Listed with reasons in `docs/design-pipeline.md` section 13. The main ones:
 - **Scope:** "this user only" is enforced by read-only views rather than by trusting the query.
 - **Testing modes:** Mock and Fail modes were added so failures can be shown without paid calls.
 - **Support:** the entries were verified and the Penn State line was added.
+- **Look and feel:** a calmer, warmer visual design (soft dawn colors, a breathing orb, larger type and touch targets) within D6, with no change in behavior. All checks were rerun after it.
 
 ## AI use
 
@@ -120,5 +121,5 @@ The Gemini client and the SQL guard are reused from my Assignment 2 project and 
 such. The demo video was recorded by the agent in headless Chrome, with captions added as
 recording notes; it is not a recording of me using the app. Failed and revised approaches
 (mock replies that never matched, a browser check that could not press Start, a raw-timestamp
-answer fixed in the prompt) are in [AI-USE.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/70f1a76f68d8b442d26f594ba5bc868176b442c8/AI-USE.md). No credentials appear in the
+answer fixed in the prompt) are in [AI-USE.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/b89d49de650392cd34d19ef7475de963ab13ac7c/AI-USE.md). No credentials appear in the
 repository, the screenshots, or the video.
