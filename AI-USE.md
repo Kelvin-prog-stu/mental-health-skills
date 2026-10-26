@@ -77,7 +77,7 @@ headless-Chrome scripts used in that project.
    for the exercise. The app was fine; the check was wrong. **Fix:** send Enter with its text,
    as a real key press does.
 8. **Revised prompt: raw timestamps.** The live model answered "The last one ended at
-   2026-10-26T21:49:56.753+00:00." I added one rule to the answer section of the prompt
+   2026-10-26T21:49:56.753+00:00." The agent added one rule to the answer section of the prompt
    (short day and month). The rerun answered "ended on Oct 26." Evidence:
    `docs/evidence/live-model-calls.md`.
 9. **Revised design: introduction without retrieval.** The design planned to use the SQL
