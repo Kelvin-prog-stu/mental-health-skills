@@ -264,3 +264,62 @@ personal information.
   limited use).
 - My Assignment 2 hotel chatbot, whose read-only SQL retrieval, saved conversation
   trace, and failure states I plan to reuse (`Kelvin-prog-stu/expedia-lite`).
+
+## 13. Part 3.2: what was built, and what changed from the design (2026-10-26)
+
+### Who owns what (MVC)
+
+| Responsibility | File |
+| --- | --- |
+| Model: tables, allowed values | `backend/models.py` |
+| Controller: every application read and write | `backend/database.py` |
+| Controller: the model's two jobs, crisis screen, mock and fail modes | `backend/assistant.py` |
+| Controller: running model-proposed SQL, read-only and user-scoped | `backend/retrieval.py` |
+| The only Gemini caller (reused from my Assignment 2) | `backend/llm_client.py` |
+| Thin routes and validation | `backend/main.py` |
+| Settings from `backend/.env` | `backend/config.py` |
+| View: screens, timer, pacing cue, Support | `frontend/src/App.vue`, `components/BreathingExercise.vue`, `components/SupportPanel.vue`, `components/HistoryView.vue` |
+| Static Support content (no request needed) | `frontend/src/support.js` |
+| The model's instructions | `prompts/breathing-guide.md` (version hash saved with every message) |
+
+### Endpoints as built
+
+| Method and path | Input | Success | Failure |
+| --- | --- | --- | --- |
+| `GET /api/health` | none | record counts, model name, "key is configured" or not, prompt version | 500 `storage_error` |
+| `GET /api/intro?mode=` | live, mock or fail | `{text, source: model, mock or fixed, conversation_id}` | never fails for a model problem: fixed text, and the failure is saved |
+| `POST /api/sessions` | `planned_breaths` 6 or 8, `cue`, `entry_ms`, `client_key` | 201 new row; 200 same row when `client_key` repeats | 422 |
+| `PATCH /api/sessions/{id}` | `status` completed or stopped, `breaths_done`, `exercise_ms`, `paused_ms` | 200 | 404, 409 already finished, 422 |
+| `POST /api/sessions/{id}/feedback` | `self_report` | 201 | 404, 422 |
+| `GET /api/sessions` | `limit` | sessions newest first, with the answer | 500 shown as "History could not load" |
+| `GET`, `PUT /api/preferences` | `breaths`, `cue`, `fewer_words` | current choices plus which ones were actually chosen | 422 |
+| `POST /api/ask` | `question` (3 to 300 characters), `mode` | status answered, no_match, insufficient_data, rejected, query_failed, blocked or failed; the answer; the query; the rows | 400, 403 if a demo mode is off |
+| `GET /api/conversations` | `limit` | conversations with their saved steps in order | 500 |
+
+### Changes from the Part 3.1 design, and why
+
+1. **The introduction does not use the SQL retrieval step.** The app passes the remembered
+   choices and the last session's facts to the model directly. Reason: these are always the
+   same two facts, so a model-written query would add a call and a failure point for nothing.
+   Retrieval is used where it earns its place: open questions about saved sessions.
+2. **Scope enforced by views, not by trusting the query.** The design said "this user only".
+   The build gives the read-only connection three TEMP views filtered to the demo user and
+   lets the authorizer read the base tables only through those views. A query naming
+   `exercise_sessions` or `messages` directly is refused. (Checked; see verification.)
+3. **Demo modes.** Mock and Fail model modes, switchable in a clearly labelled footer, so
+   failure paths can be shown and checked without paid calls. Off unless `ALLOW_DEMO_MODES=1`.
+4. **"Same as last time" is learned from Start.** Pressing Start saves the length and cue as
+   chosen preferences (D5: adapt from what was done, no settings screen). The Home line only
+   says "Same as last time" when something was actually remembered.
+5. **Support entries verified and one added.** Checked on 2026-10-26: 988 (call or text,
+   988lifeline.org), text HOME to 741741 (crisistextline.org), Penn State Crisis Line
+   877-229-6400 (studentaffairs.psu.edu/get-urgent-help), and 911.
+6. **A hidden tab pauses the exercise** and shows Resume, because the cue cannot be followed
+   while hidden. Escape stops the exercise, except while Support is open.
+
+### Not built yet
+
+The Figma capture round trip; the "Fewer words" setting only hides the introduction and the
+notice on Home (it does not yet trim other screens); a session cut short by closing the tab is
+saved as stopped with 0 breaths when the browser lets the request out, otherwise it stays
+"in progress" and History shows "Ended early"; no speech input or output (optional, not chosen).

@@ -1,0 +1,26 @@
+Read-only inspection of data/app.sqlite3 (2026-10-26). Fictional data only.
+
+SCHEMA (tables): ['conversations', 'demo_users', 'exercise_sessions', 'messages', 'preferences', 'session_feedback']
+
+exercise_sessions:
+  (1, 'd0911797064f4d1f827a64f5', 6, 'circle', '2026-10-26T21:48:56.742+00:00', '2026-10-26T21:49:56.753+00:00', 'completed', 6, 246, 60006, 0)
+  (2, 'a9fa382aeab14400a296b0f1', 6, 'text', '2026-10-26T21:49:58.450+00:00', '2026-10-26T21:50:24.613+00:00', 'stopped', 2, 116, 21659, 4500)
+  (3, '5a3fe981624142208035c806', 6, 'text', '2026-10-26T21:50:30.072+00:00', '2026-10-26T21:50:33.224+00:00', 'stopped', 0, 98, 3147, 0)
+
+session_feedback:
+  (1, 'not_sure', '2026-10-26T21:49:56.861+00:00')
+
+preferences:
+  ('alex-demo', 'breaths', '6', 'chosen', '2026-10-26T21:50:30.073+00:00')
+  ('alex-demo', 'cue', 'text', 'chosen', '2026-10-26T21:50:30.073+00:00')
+
+messages for conv-375faaff:
+  (49, 'user', 'question', 'ok', 'I want to end my life', '2026-10-26T21:52:24.361+00:00', '5eb46fa8cb54')
+  (50, 'tool', 'error', 'blocked', 'Crisis wording matched before any model call. No model request was made.', '2026-10-26T21:52:24.371+00:00', '5eb46fa8cb54')
+
+messages for conv-075484e9:
+  (44, 'user', 'question', 'ok', 'How many sessions did I finish, and when was the last one?', '2026-10-26T21:52:21.712+00:00', '5eb46fa8cb54')
+  (45, 'assistant', 'proposed_sql', 'ok', '{"sql": "SELECT count(*) AS total_finished, max(ended_at) AS last_ended_at FROM my_sessions WHERE status = \'co', '2026-10-26T21:52:22.814+00:00', '5eb46fa8cb54')
+  (46, 'tool', 'executed_sql', 'ok', "SELECT count(*) AS total_finished, max(ended_at) AS last_ended_at FROM my_sessions WHERE status = 'completed' ", '2026-10-26T21:52:22.832+00:00', '5eb46fa8cb54')
+  (47, 'tool', 'retrieval_result', 'ok', '{"columns": ["total_finished", "last_ended_at"], "rows": [[1, "2026-10-26T21:49:56.753+00:00"]]}', '2026-10-26T21:52:22.841+00:00', '5eb46fa8cb54')
+  (48, 'assistant', 'answer', 'ok', 'Based on your records, you finished 1 session. The last one ended at 2026-10-26T21:49:56.753+00:00.', '2026-10-26T21:52:23.772+00:00', '5eb46fa8cb54')

@@ -1,0 +1,4 @@
+# Runtime dependencies, pinned to the versions verified in my Assignment 2 project.
+fastapi[standard]==0.141.1
+python-dotenv==1.2.3
+httpx==0.28.1
