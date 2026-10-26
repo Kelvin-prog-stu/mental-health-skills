@@ -3,63 +3,63 @@
   "log": [
     {
       "step": "home",
-      "at": "2026-10-26T21:48:56.593Z",
+      "at": "2026-10-26T22:12:43.988Z",
       "intro": "Breathe in for 4 and out for 6, following the circle. Your last choice is ready. (mock reply)\nMock reply (test mode)",
       "focused": "primary start"
     },
     {
       "step": "exercise-in",
-      "at": "2026-10-26T21:48:59.288Z",
+      "at": "2026-10-26T22:12:46.654Z",
       "phase": "Breathe in",
       "counter": "Breath 1 of 6",
       "stopFocused": true
     },
     {
       "step": "exercise-out",
-      "at": "2026-10-26T21:49:02.455Z",
+      "at": "2026-10-26T22:12:49.863Z",
       "phase": "Breathe out"
     },
     {
       "step": "complete",
-      "at": "2026-10-26T21:49:56.767Z",
+      "at": "2026-10-26T22:13:44.226Z",
       "heading": "That was 6 breaths.",
       "measured": "Measured: 60.0 s.",
-      "wallSecondsSeenByCheck": "60.06"
+      "wallSecondsSeenByCheck": "60.10"
     },
     {
       "step": "feedback",
-      "at": "2026-10-26T21:49:57.466Z",
+      "at": "2026-10-26T22:13:44.974Z",
       "status": "Saved: \"Not sure\""
     },
     {
       "step": "support-open",
-      "at": "2026-10-26T21:50:10.313Z",
+      "at": "2026-10-26T22:13:57.811Z",
       "counter": "Breath 2 of 6 · paused",
       "panel": "If you need help now",
       "focusOnPanel": true
     },
     {
       "step": "paused-held",
-      "at": "2026-10-26T21:50:14.453Z",
+      "at": "2026-10-26T22:14:01.941Z",
       "before": "Breath 2 of 6 · paused",
       "after": "Breath 2 of 6 · paused",
       "progress": "19"
     },
     {
       "step": "stopped",
-      "at": "2026-10-26T21:50:24.613Z",
+      "at": "2026-10-26T22:14:12.118Z",
       "heading": "Stopped after 2 breaths. That is fine.",
       "measured": "Measured: 21.7 s (plus 4.5 s paused)."
     },
     {
       "step": "model-fail-home",
-      "at": "2026-10-26T21:50:25.652Z",
+      "at": "2026-10-26T22:14:13.203Z",
       "intro": "Breathe in for 4, out for 6. Six breaths, about a minute. Stop whenever you like.\nFixed text",
       "supportVisible": true
     },
     {
       "step": "support-with-model-down",
-      "at": "2026-10-26T21:50:26.077Z",
+      "at": "2026-10-26T22:14:13.679Z",
       "entries": [
         "Call or text 988",
         "Text HOME to 741741",
@@ -69,36 +69,37 @@
     },
     {
       "step": "history",
-      "at": "2026-10-26T21:50:27.174Z",
+      "at": "2026-10-26T22:14:14.752Z",
       "rows": [
-        "Oct 26, 5:49 PM | 6 breaths | Stopped after 2 | 21.7 s | (skipped)",
-        "Oct 26, 5:48 PM | 6 breaths | Completed | 60.0 s | Not sure"
+        "Oct 26, 6:13 PM | 6 breaths | Stopped after 2 | 21.7 s | (skipped)",
+        "Oct 26, 6:12 PM | 6 breaths | Completed | 60.0 s | Not sure",
+        "Oct 26, 6:12 PM | 6 breaths | Stopped after 0 | 4.1 s | (skipped)"
       ]
     },
     {
       "step": "ask-sessions",
-      "at": "2026-10-26T21:50:27.813Z",
-      "reply": "From your saved records: [{\"completed_sessions\": 1, \"last_started\": \"2026-10-26T21:48:56.742+00:00\"}] (mock reply)",
+      "at": "2026-10-26T22:14:15.431Z",
+      "reply": "From your saved records: [{\"completed_sessions\": 4, \"last_started\": \"2026-10-26T22:12:44.133+00:00\"}] (mock reply)",
       "klass": "reply answered",
       "supportOpen": false
     },
     {
       "step": "ask-crisis",
-      "at": "2026-10-26T21:50:28.432Z",
+      "at": "2026-10-26T22:14:16.076Z",
       "reply": "This app can't help with that, and nobody is monitoring it. The Support panel is open with people you can reach right now. If you are in danger, call 911.",
       "klass": "reply blocked",
       "supportOpen": true
     },
     {
       "step": "ask-write",
-      "at": "2026-10-26T21:50:29.071Z",
+      "at": "2026-10-26T22:14:16.728Z",
       "reply": "That query was not allowed, so it was not run and nothing changed. (Only a SELECT query is allowed.)",
       "klass": "reply rejected",
       "supportOpen": false
     },
     {
       "step": "narrow",
-      "at": "2026-10-26T21:50:33.080Z",
+      "at": "2026-10-26T22:14:20.722Z",
       "stopVisible": true,
       "supportVisible": true
     }

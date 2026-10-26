@@ -84,6 +84,7 @@ function start() {
   feedbackSent.value = ''
   session.value = { clientKey: newKey(), id: null, breaths: choice.value.breaths, cue: choice.value.cue, entryMs }
   view.value = 'exercise'
+  window.scrollTo(0, 0)
   // Not awaited: a slow or missing backend must not delay or block the exercise.
   session.value.saving = startSession({
     planned_breaths: choice.value.breaths,
@@ -156,7 +157,7 @@ onMounted(() => {
 
 <template>
   <header class="bar">
-    <button type="button" class="brand" @click="view !== 'exercise' && goHome()">Breathe 60</button>
+    <button type="button" class="brand" @click="view !== 'exercise' && goHome()"><span class="brand-dot" aria-hidden="true"></span>Breathe 60</button>
     <nav>
       <button v-if="view !== 'exercise' && view !== 'history'" type="button" class="link" @click="view = 'history'">History</button>
       <button v-if="view === 'history'" type="button" class="link" @click="goHome">Home</button>
@@ -166,7 +167,11 @@ onMounted(() => {
 
   <main class="page">
     <section v-if="view === 'home'" class="home" aria-labelledby="home-title">
-      <h1 id="home-title" class="visually-hidden">Paced breathing</h1>
+      <div class="hero">
+        <div class="hero-orb" aria-hidden="true"></div>
+        <h1 id="home-title">Take a calm minute</h1>
+        <p v-if="!prefs.fewer_words">Six slow breaths. You can stop at any moment.</p>
+      </div>
       <p v-if="!prefs.fewer_words" class="intro" aria-live="polite">
         <template v-if="intro.source === 'loading'"><span class="muted">...</span></template>
         <template v-else>{{ intro.text }}</template>
@@ -179,14 +184,12 @@ onMounted(() => {
         Start breathing ({{ seconds }} s)
       </button>
 
-      <p v-if="sameAsLast && !changing" class="muted">
-        Same as last time: {{ choice.breaths }} breaths, {{ choice.cue === 'circle' ? 'circle' : 'text' }} cue.
+      <div v-if="!changing" class="pill-row">
+        <span v-if="sameAsLast" class="pill">Same as last time</span>
+        <span class="pill">{{ choice.breaths }} breaths</span>
+        <span class="pill">{{ choice.cue === 'circle' ? 'Circle cue' : 'Text cue, no motion' }}</span>
         <button type="button" class="link" @click="changing = true">Change</button>
-      </p>
-      <p v-else-if="!changing" class="muted">
-        {{ choice.breaths }} breaths, {{ choice.cue }} cue.
-        <button type="button" class="link" @click="changing = true">Change</button>
-      </p>
+      </div>
 
       <fieldset v-if="changing" class="choices">
         <legend>Length</legend>
@@ -198,7 +201,7 @@ onMounted(() => {
         <button type="button" class="link" @click="changing = false">Done</button>
       </fieldset>
 
-      <p class="small">
+      <p class="small center">
         <button type="button" class="link" @click="toggleFewerWords">{{ prefs.fewer_words ? 'Show more words' : 'Fewer words' }}</button>
       </p>
       <p v-if="!prefs.fewer_words" class="notice">{{ PROTOTYPE_NOTICE }}</p>
@@ -213,7 +216,8 @@ onMounted(() => {
       @finished="onFinished"
     />
 
-    <section v-else-if="view === 'end'" class="end" aria-live="polite">
+    <section v-else-if="view === 'end'" class="end card" aria-live="polite">
+      <div class="hero-orb" style="width: 84px; height: 84px; margin: 0.4rem auto 0" aria-hidden="true"></div>
       <h1 v-if="lastResult.status === 'completed'">That was {{ session.breaths }} breaths.</h1>
       <h1 v-else>Stopped after {{ lastResult.breathsDone }} {{ lastResult.breathsDone === 1 ? 'breath' : 'breaths' }}. That is fine.</h1>
       <p class="muted small">Measured: {{ (lastResult.exerciseMs / 1000).toFixed(1) }} s<span v-if="lastResult.pausedMs"> (plus {{ (lastResult.pausedMs / 1000).toFixed(1) }} s paused)</span>.</p>

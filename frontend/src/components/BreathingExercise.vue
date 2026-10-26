@@ -105,7 +105,9 @@ defineExpose({ stop })
     <p class="counter">Breath {{ breathIndex + 1 }} of {{ breaths }}<span v-if="isPaused"> · paused</span></p>
 
     <div v-if="!useText" class="circle-wrap" aria-hidden="true">
+      <div class="halo" :style="{ transform: `scale(${0.75 + scale * 0.45})`, opacity: 0.25 + (scale - 0.6) }"></div>
       <div class="circle" :style="{ transform: `scale(${scale})` }"></div>
+      <p class="phase-in-orb">{{ phase === 'in' ? 'in' : 'out' }}</p>
     </div>
 
     <p class="phase" :class="{ big: useText }" aria-live="polite">
@@ -133,17 +135,33 @@ defineExpose({ stop })
 </template>
 
 <style scoped>
-.exercise { display: grid; justify-items: center; gap: 0.6rem; padding-top: 1rem; }
+.exercise { display: grid; justify-items: center; gap: 0.45rem; padding-top: 0.2rem; }
 .counter { margin: 0; color: var(--muted); font-size: 0.95rem; }
-.circle-wrap { width: 220px; height: 220px; display: grid; place-items: center; margin: 0.6rem 0; }
-.circle { width: 220px; height: 220px; border-radius: 50%; background: var(--cue); border: 2px solid var(--cue-edge); }
-.phase { margin: 0; font-size: 1.6rem; }
-.phase.big { margin-top: 3rem; font-size: 2rem; }
+.circle-wrap { position: relative; width: 220px; height: 220px; display: grid; place-items: center; margin: 0.8rem 0; }
+.circle-wrap > * { grid-area: 1 / 1; }
+.halo {
+  width: 220px; height: 220px; border-radius: 50%;
+  background: radial-gradient(circle, rgb(188 214 230 / 70%) 0%, rgb(253 227 207 / 40%) 55%, transparent 72%);
+}
+.circle {
+  width: 170px; height: 170px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #d6e8f3 35%, #9fc3d8 75%, #7ea7c1 100%);
+  box-shadow: 0 18px 40px -16px rgb(35 49 74 / 45%), inset 0 -10px 30px rgb(61 110 143 / 20%);
+}
+.phase-in-orb {
+  margin: 0; z-index: 1; color: #fff; font-size: 1.15rem; letter-spacing: 0.25em; text-transform: uppercase;
+  text-shadow: 0 1px 6px rgb(35 49 74 / 45%);
+}
+.phase { margin: 0; font-family: Georgia, serif; font-size: 1.9rem; }
+.phase.big { margin-top: 3rem; font-size: 2.3rem; }
 .count { margin: 0; min-height: 1.6rem; font-size: 1.3rem; letter-spacing: 0.4rem; color: var(--ink); }
 .count .dim { color: var(--line-strong); }
 .progress { width: min(320px, 90%); height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin: 0.8rem 0; }
 .progress i { display: block; height: 100%; background: var(--cue-edge); }
 .paused-box { text-align: center; }
-.stop { width: min(320px, 90%); padding: 0.9rem; font-size: 1.1rem; font-weight: 600; border: 2px solid var(--muted); border-radius: 12px; background: #fff; color: var(--ink); }
+.stop { width: min(320px, 90%); min-height: 56px; padding: 0.9rem; font-size: 1.15rem; font-weight: 650; border: 2px solid var(--line-strong); border-radius: 18px; background: rgb(255 255 255 / 85%); color: var(--ink); box-shadow: var(--shadow); }
+.stop:hover { border-color: var(--brand); }
+.progress { height: 8px; border-radius: 4px; }
+.progress i { background: linear-gradient(90deg, var(--cue-edge), var(--accent)); }
 .hint { margin: 0; color: var(--muted); font-size: 0.85rem; }
 </style>
