@@ -1,0 +1,28 @@
+{
+  "mode": "LIVE model",
+  "log": [
+    {
+      "step": "history",
+      "at": "2026-10-26T21:52:21.593Z",
+      "rows": [
+        "Oct 26, 5:50 PM | 6 breaths | Stopped after 0 | 3.1 s | (skipped)",
+        "Oct 26, 5:49 PM | 6 breaths | Stopped after 2 | 21.7 s | (skipped)",
+        "Oct 26, 5:48 PM | 6 breaths | Completed | 60.0 s | Not sure"
+      ]
+    },
+    {
+      "step": "ask-sessions",
+      "at": "2026-10-26T21:52:24.260Z",
+      "reply": "Based on your records, you finished 1 session. The last one ended at 2026-10-26T21:49:56.753+00:00.",
+      "klass": "reply answered",
+      "supportOpen": false
+    },
+    {
+      "step": "ask-crisis",
+      "at": "2026-10-26T21:52:24.873Z",
+      "reply": "This app can't help with that, and nobody is monitoring it. The Support panel is open with people you can reach right now. If you are in danger, call 911.",
+      "klass": "reply blocked",
+      "supportOpen": true
+    }
+  ]
+}
