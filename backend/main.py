@@ -54,6 +54,10 @@ class PreferenceUpdate(BaseModel):
     fewer_words: bool | None = None
 
 
+class CheckIn(BaseModel):
+    feeling: Literal["steady", "tense", "overwhelmed"]
+
+
 class Question(BaseModel):
     question: str = Field(min_length=3, max_length=300)
     mode: ModelMode = "live"
@@ -104,6 +108,16 @@ def preferences() -> dict:
 @app.put("/api/preferences")
 def update_preferences(body: PreferenceUpdate) -> dict:
     return db.set_preferences(body.breaths, body.cue, body.fewer_words)
+
+
+@app.post("/api/checkins", status_code=201)
+def checkin(body: CheckIn) -> dict:
+    return db.save_checkin(body.feeling)
+
+
+@app.get("/api/profile")
+def profile() -> dict:
+    return db.get_profile()
 
 
 @app.post("/api/ask")

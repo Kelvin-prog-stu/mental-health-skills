@@ -122,7 +122,16 @@ def _intro_context() -> str:
         f"last session: {last[0]['planned_breaths']} breaths, {last[0]['cue']} cue"
         if last else "no sessions saved yet"
     )
-    return f"Remembered choices: {remembered}. {last_fact}."
+    profile = db.get_profile()
+    usual = profile["usual"]
+    usual_fact = (
+        f"usual choice over the last {usual['based_on']} sessions: {usual['breaths']} breaths, {usual['cue']} cue"
+        if usual else "no usual choice yet"
+    )
+    checkin = profile["current_checkin"]
+    words = {"steady": "steady", "tense": "a bit tense", "overwhelmed": "overwhelmed"}
+    checkin_fact = f"today's check-in, in their own words: '{words[checkin['feeling']]}'" if checkin else "no check-in today"
+    return f"Name: Alex. Remembered choices: {remembered}. {last_fact}; {usual_fact}; {checkin_fact}."
 
 
 def intro(mode: str = "live") -> dict:

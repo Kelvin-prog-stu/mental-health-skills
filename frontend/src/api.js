@@ -16,7 +16,7 @@ async function request(path, options = {}) {
     response = await fetch(`/api${path}`, {
       headers: { 'Content-Type': 'application/json' },
       ...options,
-      signal: options.signal ?? AbortSignal.timeout(30000),
+      signal: options.signal ?? AbortSignal.timeout(60000),
     })
   } catch {
     throw new ApiError(UNREACHABLE, 'network')
@@ -45,3 +45,5 @@ export const sendFeedback = (id, selfReport) =>
 export const listSessions = () => request('/sessions')
 export const listConversations = () => request('/conversations')
 export const ask = (question, mode) => request('/ask', { method: 'POST', body: JSON.stringify({ question, mode }) })
+export const getProfile = () => request('/profile')
+export const sendCheckin = (feeling) => request('/checkins', { method: 'POST', body: JSON.stringify({ feeling }) })

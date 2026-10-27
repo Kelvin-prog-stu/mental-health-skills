@@ -6,6 +6,8 @@ BREATH_OUT_SECONDS = 6
 ALLOWED_BREATHS = (6, 8)
 CUES = ("circle", "text")
 SELF_REPORTS = ("a_bit_calmer", "about_the_same", "not_sure")
+FEELINGS = ("steady", "tense", "overwhelmed")
+CHECKIN_FRESH_HOURS = 6  # a check-in older than this no longer shapes Home
 
 SCHEMA = """
 PRAGMA foreign_keys = ON;
@@ -74,6 +76,15 @@ CREATE TABLE IF NOT EXISTS messages (
     status           TEXT NOT NULL CHECK (status IN ('ok', 'failed', 'blocked', 'fixed_text')),
     created_at       TEXT NOT NULL,
     prompt_version   TEXT
+);
+
+-- The optional one-tap check-in on Home. The person's own word for how they are arriving,
+-- never inferred. It changes what Home shows, and the person can change or ignore it.
+CREATE TABLE IF NOT EXISTS checkins (
+    checkin_id  INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     TEXT NOT NULL REFERENCES demo_users (user_id),
+    feeling     TEXT NOT NULL CHECK (feeling IN ('steady', 'tense', 'overwhelmed')),
+    created_at  TEXT NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages (conversation_id, message_id);

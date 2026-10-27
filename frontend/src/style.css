@@ -139,3 +139,15 @@ button { font: inherit; cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* Check-in and adaptation */
+.greeting { margin: 0 0 0.2rem; color: var(--brand); font-weight: 600; letter-spacing: 0.02em; }
+.card-soft { background: rgb(255 255 255 / 80%); border: 1px solid var(--line); border-radius: 18px; padding: 0.9rem 1rem; box-shadow: var(--shadow); }
+.checkin { display: grid; gap: 0.6rem; }
+.checkin-q { margin: 0; text-align: center; font-weight: 600; }
+.checkin-line { margin: 0; text-align: center; color: var(--muted); }
+.adapt-note {
+  margin: 0; padding: 0.6rem 0.9rem; border-radius: 14px; text-align: center;
+  background: #fdf1e7; border: 1px solid #f3dcc8; color: #6b4a2f; font-size: 0.95rem;
+}
+.pill-usual { background: #e7f1f7; border-color: #c9dceb; color: var(--brand-dark); font-weight: 600; }

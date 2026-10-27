@@ -345,3 +345,27 @@ than exciting, because D6 found saturated color and motion read as demand:
 
 No behavior changed. The 28 backend checks and every browser check were rerun after the
 refresh and still pass (six breaths measured 60.0 s).
+
+## 14. Presentation alignment (2026-10-27)
+
+The presentation rubric asks for user state that changes the interface, a profile that grows from
+history, and a chatbot tailored by both. Compared with the instructor's reference demo, three gaps
+were closed. The reference's clinical screening was deliberately not copied: it is clinical, and the
+reference is optional.
+
+- **Optional one-tap check-in** on Home ("How are you arriving right now?": Steady, A bit tense,
+  Overwhelmed), saved in a new `checkins` table as the person's own word. Overwhelmed contracts Home
+  to the title, Start and Support (D1), with "Show everything" to undo. A bit tense sets 6 breaths
+  (R1), with "Use 8 instead". Steady offers 8. It never blocks Start or Support and only shapes Home
+  for 6 hours. `POST /api/checkins`.
+- **Profile from use** (`GET /api/profile`): the display name, counts, "your usual" (most common
+  length and cue over the last 10 sessions, needs 2), and recent check-ins. Home starts on the usual
+  and shows a "Your usual" pill; History shows a profile card.
+- **Tailored introduction:** the model now gets the usual and today's check-in word, and may repeat
+  the word once without interpreting it or promising change (prompt, Intro section).
+- **Model fallback chain:** the free-tier models went slow or overloaded at different times on Oct 26
+  and 27, so a timeout or 503 now moves on to the next model in `GEMINI_FALLBACK_MODELS`.
+
+Checks: `check_app.py` 33 of 33 (5 new for check-in and profile); the check-in, contraction, override,
+usual pill and profile card were driven in headless Chrome; live: the introduction said "You said you're
+a bit tense. Your usual six breaths with the circle are ready...".

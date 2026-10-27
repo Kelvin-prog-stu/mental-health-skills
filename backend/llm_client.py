@@ -21,14 +21,14 @@ import time
 
 import httpx
 
-from config import gemini_api_key, gemini_model
+from config import gemini_api_key, gemini_fallback_models, gemini_model
 
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-REQUEST_TIMEOUT_SECONDS = 20.0
+REQUEST_TIMEOUT_SECONDS = 12.0
 MAX_OUTPUT_TOKENS = 800
 # The free tier answers 503 "high demand" in bursts. That is worth a short retry; a timeout,
 # a 429, or any other error is not, so those fail at once.
-MAX_503_RETRIES = 2
+MAX_503_RETRIES = 1
 RETRY_DELAY_SECONDS = 2.0
 
 
@@ -61,6 +61,29 @@ class LlmBadOutputError(LlmError):
         super().__init__(detail)
 
 
+def model_chain() -> list[str]:
+    """The configured model first, then the fallbacks, without repeats."""
+    chain = [gemini_model(), *gemini_fallback_models()]
+    return list(dict.fromkeys(m for m in chain if m))
+
+
+def _post(model: str, api_key: str, body: dict) -> httpx.Response:
+    for attempt in range(MAX_503_RETRIES + 1):
+        try:
+            response = httpx.post(
+                GEMINI_URL.format(model=model),
+                headers={"x-goog-api-key": api_key, "Content-Type": "application/json"},
+                json=body,
+                timeout=REQUEST_TIMEOUT_SECONDS,
+            )
+        except httpx.HTTPError as exc:
+            raise LlmServiceError(type(exc).__name__) from None
+        if response.status_code != 503 or attempt == MAX_503_RETRIES:
+            return response
+        time.sleep(RETRY_DELAY_SECONDS)
+    return response
+
+
 def generate(system: str, user: str, json_output: bool = False) -> str:
     """Ask the model one question and return its text. See the module contract."""
     api_key = gemini_api_key()
@@ -75,19 +98,21 @@ def generate(system: str, user: str, json_output: bool = False) -> str:
     if json_output:
         body["generationConfig"]["responseMimeType"] = "application/json"
 
-    for attempt in range(MAX_503_RETRIES + 1):
+    # The free tier's models go overloaded or slow at different times (observed 2026-10-26 and 27),
+    # so a timeout or 503 moves on to the next configured model instead of failing outright.
+    last_error: LlmServiceError | None = None
+    for model in model_chain():
         try:
-            response = httpx.post(
-                GEMINI_URL.format(model=gemini_model()),
-                headers={"x-goog-api-key": api_key, "Content-Type": "application/json"},
-                json=body,
-                timeout=REQUEST_TIMEOUT_SECONDS,
-            )
-        except httpx.HTTPError as exc:
-            raise LlmServiceError(type(exc).__name__) from None
-        if response.status_code != 503 or attempt == MAX_503_RETRIES:
-            break
-        time.sleep(RETRY_DELAY_SECONDS)
+            response = _post(model, api_key, body)
+        except LlmServiceError as exc:
+            last_error = exc
+            continue
+        if response.status_code == 503:
+            last_error = LlmServiceError("the model service answered 503")
+            continue
+        break
+    else:
+        raise last_error or LlmServiceError("no model configured")
 
     if response.status_code == 429:
         raise LlmRateLimitedError()

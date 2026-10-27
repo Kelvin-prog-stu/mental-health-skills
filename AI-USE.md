@@ -92,3 +92,9 @@ headless-Chrome scripts used in that project.
     orb, bigger type and touch targets), then caught two layout problems in the browser and fixed them: the
     orb pushed the breath counter under the header on a short window, and the Support panel ran past the
     bottom of the screen. All checks were rerun afterwards.
+12. **Presentation alignment (Oct 27).** I gave the agent the presentation rubric and the instructor's
+    reference demo video. It compared them with the app, found no check-in, no visible profile and a
+    chatbot that only used the last choice, and added an optional check-in that adapts Home, a profile
+    built from history, and a check-in-aware introduction. It chose not to copy the reference's
+    clinical screening. While testing, every Gemini model it tried failed at some point (timeouts and
+    503s); it added an automatic fallback across models rather than changing the default again.

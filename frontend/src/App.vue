@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, onMounted, ref } from 'vue'
 
-import { finishSession, getIntro, getPreferences, putPreferences, sendFeedback, startSession } from '@/api'
+import { finishSession, getIntro, getPreferences, getProfile, putPreferences, sendCheckin, sendFeedback, startSession } from '@/api'
 import BreathingExercise from '@/components/BreathingExercise.vue'
 import HistoryView from '@/components/HistoryView.vue'
 import SupportPanel from '@/components/SupportPanel.vue'
@@ -26,6 +26,19 @@ const startButton = ref(null)
 
 const seconds = computed(() => choice.value.breaths * 10)
 const sameAsLast = computed(() => prefs.value.remembered.includes('breaths') || prefs.value.remembered.includes('cue'))
+const profile = ref(null)
+const showEverything = ref(false)
+const changingCheckin = ref(false)
+const suggestionNote = ref('')
+const FEELING_WORDS = { steady: 'Steady', tense: 'A bit tense', overwhelmed: 'Overwhelmed' }
+const feeling = computed(() => profile.value?.current_checkin?.feeling ?? null)
+// Less on screen when the person asks for it: "Fewer words", or the "Overwhelmed" check-in (D1).
+const contracted = computed(() => prefs.value.fewer_words || (feeling.value === 'overwhelmed' && !showEverything.value))
+const isUsual = computed(() => {
+  const u = profile.value?.usual
+  return !!u && u.breaths === choice.value.breaths && u.cue === choice.value.cue
+})
+const firstName = computed(() => (profile.value?.display_name ?? 'Alex').split(' ')[0])
 
 function readMode() {
   try {
@@ -61,7 +74,40 @@ async function loadPreferences() {
   } catch {
     // keep defaults
   }
-  choice.value = { breaths: prefs.value.breaths, cue: prefs.value.cue }
+  try {
+    profile.value = await getProfile()
+  } catch {
+    // no profile shown; the exercise and Support do not need it
+  }
+  // Default to the person's usual (most common recent choice), else the last choice.
+  const usual = profile.value?.usual
+  choice.value = usual ? { breaths: usual.breaths, cue: usual.cue } : { breaths: prefs.value.breaths, cue: prefs.value.cue }
+  suggestionNote.value = ''
+  applyCheckin(profile.value?.current_checkin?.feeling)
+}
+
+// The check-in is the person's own word. It changes what Home shows and suggests; it never
+// blocks Start or Support, and every change it makes can be undone with one tap.
+function applyCheckin(feeling) {
+  showEverything.value = false
+  if (feeling === 'tense' && choice.value.breaths !== 6) {
+    choice.value = { ...choice.value, breaths: 6 }
+    suggestionNote.value = 'Set to 6 breaths because you said a bit tense.'
+  } else if (feeling === 'steady') {
+    suggestionNote.value = ''
+  }
+}
+
+async function checkIn(feeling) {
+  try {
+    await sendCheckin(feeling)
+  } catch {
+    // Not saved, but still used for this visit.
+  }
+  profile.value = { ...(profile.value ?? {}), current_checkin: { feeling } }
+  applyCheckin(feeling)
+  changingCheckin.value = false
+  loadIntro()
 }
 
 async function goHome() {
@@ -168,11 +214,40 @@ onMounted(() => {
   <main class="page">
     <section v-if="view === 'home'" class="home" aria-labelledby="home-title">
       <div class="hero">
-        <div class="hero-orb" aria-hidden="true"></div>
+        <div v-if="!contracted" class="hero-orb" aria-hidden="true"></div>
+        <p v-if="!contracted" class="greeting">{{ profile?.sessions ? `Welcome back, ${firstName}` : `Hi, ${firstName}` }}</p>
         <h1 id="home-title">Take a calm minute</h1>
-        <p v-if="!prefs.fewer_words">Six slow breaths. You can stop at any moment.</p>
+        <p v-if="!contracted">Six slow breaths. You can stop at any moment.</p>
       </div>
-      <p v-if="!prefs.fewer_words" class="intro" aria-live="polite">
+
+      <div v-if="!feeling || changingCheckin" class="checkin card-soft" role="group" aria-labelledby="checkin-q">
+        <p id="checkin-q" class="checkin-q">How are you arriving right now? <span class="muted small">(optional)</span></p>
+        <div class="chips">
+          <button type="button" @click="checkIn('steady')">Steady</button>
+          <button type="button" @click="checkIn('tense')">A bit tense</button>
+          <button type="button" @click="checkIn('overwhelmed')">Overwhelmed</button>
+        </div>
+        <p class="muted small center">Your own word. The app never guesses how you feel.</p>
+      </div>
+      <p v-else class="checkin-line">
+        You said: <strong>{{ FEELING_WORDS[feeling] }}</strong>
+        <button type="button" class="link" @click="changingCheckin = true">Change</button>
+      </p>
+
+      <p v-if="feeling === 'overwhelmed' && !showEverything" class="adapt-note">
+        You said overwhelmed, so this screen shows less.
+        <button type="button" class="link" @click="showEverything = true">Show everything</button>
+      </p>
+      <p v-if="suggestionNote" class="adapt-note">
+        {{ suggestionNote }}
+        <button type="button" class="link" @click="choice = { ...choice, breaths: 8 }; suggestionNote = ''">Use 8 instead</button>
+      </p>
+      <p v-if="feeling === 'steady' && choice.breaths === 6 && !changing" class="adapt-note">
+        Feeling steady? You could try the longer 8 breaths (80 s).
+        <button type="button" class="link" @click="choice = { ...choice, breaths: 8 }">Try 8</button>
+      </p>
+
+      <p v-if="!contracted" class="intro" aria-live="polite">
         <template v-if="intro.source === 'loading'"><span class="muted">...</span></template>
         <template v-else>{{ intro.text }}</template>
         <span v-if="intro.source !== 'loading'" class="source">
@@ -184,8 +259,9 @@ onMounted(() => {
         Start breathing ({{ seconds }} s)
       </button>
 
-      <div v-if="!changing" class="pill-row">
-        <span v-if="sameAsLast" class="pill">Same as last time</span>
+      <div v-if="!changing && !contracted" class="pill-row">
+        <span v-if="isUsual" class="pill pill-usual" :title="`Your most common choice over your last ${profile.usual.based_on} sessions`">Your usual</span>
+        <span v-else-if="sameAsLast" class="pill">Same as last time</span>
         <span class="pill">{{ choice.breaths }} breaths</span>
         <span class="pill">{{ choice.cue === 'circle' ? 'Circle cue' : 'Text cue, no motion' }}</span>
         <button type="button" class="link" @click="changing = true">Change</button>
@@ -204,7 +280,7 @@ onMounted(() => {
       <p class="small center">
         <button type="button" class="link" @click="toggleFewerWords">{{ prefs.fewer_words ? 'Show more words' : 'Fewer words' }}</button>
       </p>
-      <p v-if="!prefs.fewer_words" class="notice">{{ PROTOTYPE_NOTICE }}</p>
+      <p class="notice">{{ PROTOTYPE_NOTICE }}</p>
     </section>
 
     <BreathingExercise

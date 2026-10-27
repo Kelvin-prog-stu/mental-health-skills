@@ -124,6 +124,15 @@ with TestClient(main.app) as c:
     scoped = retrieval.run_query("SELECT COUNT(*) FROM my_sessions")
     check("the user-scoped view is readable", scoped.rows == ((2,),), scoped.rows)
     check("nothing changed after all the refused queries", snapshot()["exercise_sessions"] == before["exercise_sessions"], "identical")
+    # ---- Check-in and profile -----------------------------------------------------------
+    ci = c.post("/api/checkins", json={"feeling": "tense"})
+    check("a check-in is saved as the person's own word", ci.status_code == 201 and ci.json()["feeling"] == "tense", ci.status_code)
+    check("an unknown check-in word is refused (422)", c.post("/api/checkins", json={"feeling": "sad"}).status_code == 422, "422")
+    prof = c.get("/api/profile").json()
+    check("the profile shows today's check-in so Home can adapt", (prof["current_checkin"] or {}).get("feeling") == "tense", prof["current_checkin"])
+    check("the profile's usual comes from history (most common recent choice)", prof["usual"] is not None and prof["usual"]["based_on"] == 2 and prof["sessions"] == 2, prof["usual"])
+    check("the check-in does not change any observed session record", snapshot()["exercise_sessions"] == before["exercise_sessions"], "unchanged")
+
     # ---- Health and persistence --------------------------------------------------------
     health = c.get("/api/health").json()
     check("health reports key status, never the key", "status" in health["model"] and "AIza" not in json.dumps(health), health["model"]["status"])

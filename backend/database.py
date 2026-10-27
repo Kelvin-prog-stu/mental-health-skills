@@ -6,10 +6,11 @@ this module: its read-only queries go through retrieval.py on a separate connect
 
 import sqlite3
 import uuid
+from collections import Counter
 from datetime import datetime, timezone
 
 import config
-from models import ALLOWED_BREATHS, CUES, DEMO_USER_ID, SCHEMA, SELF_REPORTS
+from models import ALLOWED_BREATHS, CHECKIN_FRESH_HOURS, CUES, DEMO_USER_ID, FEELINGS, SCHEMA, SELF_REPORTS
 
 
 class NotFoundError(Exception):
@@ -210,3 +211,65 @@ def list_conversations(limit: int = 30) -> list[dict]:
             (DEMO_USER_ID, limit),
         ).fetchall()
     return [{**dict(c), "messages": list_messages(c["conversation_id"])} for c in convs]
+
+
+# ---- Check-ins and profile (Part 3.2 presentation) ---------------------------------------
+
+
+def save_checkin(feeling: str) -> dict:
+    if feeling not in FEELINGS:
+        raise ValueError("Unsupported answer.")
+    with get_connection() as conn:
+        cursor = conn.execute(
+            "INSERT INTO checkins (user_id, feeling, created_at) VALUES (?, ?, ?)",
+            (DEMO_USER_ID, feeling, now_iso()),
+        )
+        row = conn.execute("SELECT * FROM checkins WHERE checkin_id = ?", (cursor.lastrowid,)).fetchone()
+    return dict(row)
+
+
+def recent_checkins(limit: int = 5) -> list[dict]:
+    with get_connection() as conn:
+        rows = conn.execute(
+            "SELECT * FROM checkins WHERE user_id = ? ORDER BY checkin_id DESC LIMIT ?", (DEMO_USER_ID, limit)
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def current_checkin() -> dict | None:
+    """Today's check-in if it is recent enough to shape Home, else None."""
+    latest = recent_checkins(1)
+    if not latest:
+        return None
+    age = datetime.now(timezone.utc) - datetime.fromisoformat(latest[0]["created_at"])
+    return latest[0] if age.total_seconds() < CHECKIN_FRESH_HOURS * 3600 else None
+
+
+def get_profile() -> dict:
+    """The demo user's profile, built from what they actually did. `usual` is the most common
+    length and cue over their last 10 sessions; it needs at least 2 sessions to exist."""
+    with get_connection() as conn:
+        user = conn.execute("SELECT display_name FROM demo_users WHERE user_id = ?", (DEMO_USER_ID,)).fetchone()
+        recent = conn.execute(
+            "SELECT planned_breaths, cue, status FROM exercise_sessions WHERE user_id = ? "
+            "ORDER BY session_id DESC LIMIT 10",
+            (DEMO_USER_ID,),
+        ).fetchall()
+        totals = conn.execute(
+            "SELECT COUNT(*), SUM(status = 'completed'), SUM(status = 'stopped') FROM exercise_sessions WHERE user_id = ?",
+            (DEMO_USER_ID,),
+        ).fetchone()
+    usual = None
+    if len(recent) >= 2:
+        breaths = Counter(r["planned_breaths"] for r in recent).most_common(1)[0][0]
+        cue = Counter(r["cue"] for r in recent).most_common(1)[0][0]
+        usual = {"breaths": breaths, "cue": cue, "based_on": len(recent)}
+    return {
+        "display_name": user["display_name"] if user else "Alex (fictional)",
+        "sessions": totals[0] or 0,
+        "completed": totals[1] or 0,
+        "stopped": totals[2] or 0,
+        "usual": usual,
+        "current_checkin": current_checkin(),
+        "recent_checkins": recent_checkins(5),
+    }

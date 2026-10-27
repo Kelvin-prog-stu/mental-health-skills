@@ -34,3 +34,12 @@ def demo_modes_allowed() -> bool:
 
 def key_status() -> str:
     return "key is configured" if gemini_api_key() else "key is not configured"
+
+
+DEFAULT_FALLBACK_MODELS = "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.6-flash"
+
+
+def gemini_fallback_models() -> list[str]:
+    """Tried in order when the main model times out or is overloaded (GEMINI_FALLBACK_MODELS)."""
+    raw = os.getenv("GEMINI_FALLBACK_MODELS", DEFAULT_FALLBACK_MODELS)
+    return [m.strip() for m in raw.split(",") if m.strip()]

@@ -2,12 +2,14 @@
 // Saved sessions and questions, read through the API from SQLite. Browsing makes no model call.
 import { onMounted, ref } from 'vue'
 
-import { ask, listConversations, listSessions } from '@/api'
+import { ask, getProfile, listConversations, listSessions } from '@/api'
 
 const props = defineProps({ mode: { type: String, required: true } })
 const emit = defineEmits(['open-support'])
 
 const sessions = ref([])
+const profile = ref(null)
+const FEELINGS = { steady: 'Steady', tense: 'A bit tense', overwhelmed: 'Overwhelmed' }
 const conversations = ref([])
 const loadError = ref('')
 const loading = ref(true)
@@ -26,7 +28,8 @@ async function load() {
   loading.value = true
   loadError.value = ''
   try {
-    const [s, c] = await Promise.all([listSessions(), listConversations()])
+    const [s, c, p] = await Promise.all([listSessions(), listConversations(), getProfile()])
+    profile.value = p
     sessions.value = s.sessions
     conversations.value = c.conversations.filter((x) => x.purpose === 'question')
   } catch (error) {
@@ -59,6 +62,23 @@ onMounted(load)
 
 <template>
   <section aria-labelledby="history-title">
+    <div v-if="profile" class="profile-card" data-testid="profile-card">
+      <p class="profile-name">{{ profile.display_name }} <span class="muted small">· profile built from use, nothing to fill in</span></p>
+      <div class="profile-stats">
+        <span><strong>{{ profile.sessions }}</strong> sessions</span>
+        <span><strong>{{ profile.completed }}</strong> finished</span>
+        <span><strong>{{ profile.stopped }}</strong> stopped (that's fine)</span>
+      </div>
+      <p class="small">
+        <template v-if="profile.usual">Your usual: <strong>{{ profile.usual.breaths }} breaths, {{ profile.usual.cue === 'circle' ? 'circle' : 'text' }} cue</strong> (most common over your last {{ profile.usual.based_on }} sessions). Home starts there; Change overrides it.</template>
+        <template v-else>Your usual appears after two sessions.</template>
+      </p>
+      <p v-if="profile.recent_checkins.length" class="small">
+        Recent check-ins, in your words:
+        <span v-for="c in profile.recent_checkins" :key="c.checkin_id" class="pill">{{ FEELINGS[c.feeling] }} · {{ when(c.created_at) }}</span>
+      </p>
+    </div>
+
     <h2 id="history-title">Your sessions</h2>
     <p v-if="loading" class="muted">Loading your history...</p>
     <p v-else-if="loadError" class="problem" role="alert">{{ loadError }}</p>
@@ -112,6 +132,11 @@ onMounted(load)
 </template>
 
 <style scoped>
+.profile-card { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 1rem 1.1rem; box-shadow: var(--shadow); margin-bottom: 1rem; }
+.profile-card p { margin: 0.3rem 0; }
+.profile-name { font-family: Georgia, serif; font-size: 1.25rem; }
+.profile-stats { display: flex; flex-wrap: wrap; gap: 1rem; margin: 0.4rem 0; }
+.profile-card .pill { display: inline-block; margin: 0.2rem 0.3rem 0 0; padding: 0.2rem 0.6rem; border: 1px solid var(--line); border-radius: 999px; font-size: 0.82rem; background: #f7f9fb; }
 h2 { font-family: Georgia, serif; font-weight: 400; font-size: 1.6rem; margin: 0.4rem 0 0.8rem; }
 .table-wrap { overflow-x: auto; background: #fff; border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); }
 table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
