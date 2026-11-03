@@ -24,7 +24,8 @@ import httpx
 from config import gemini_api_key, gemini_fallback_models, gemini_model
 
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-REQUEST_TIMEOUT_SECONDS = 12.0
+# Short, so a slow model hands over to the next one quickly (3.5 Flash-Lite took 13 s on 2026-10-27).
+REQUEST_TIMEOUT_SECONDS = 8.0
 MAX_OUTPUT_TOKENS = 800
 # The free tier answers 503 "high demand" in bursts. That is worth a short retry; a timeout,
 # a 429, or any other error is not, so those fail at once.
@@ -122,11 +123,16 @@ def generate(system: str, user: str, json_output: bool = False) -> str:
 
     try:
         payload = response.json()
-        parts = payload["candidates"][0]["content"]["parts"]
-        text = "".join(part.get("text", "") for part in parts).strip()
+        candidate = payload["candidates"][0]
+        parts = candidate["content"]["parts"]
+        text = "".join(part.get("text", "") for part in parts if not part.get("thought")).strip()
+        finish = candidate.get("finishReason", "STOP")
     except (ValueError, KeyError, IndexError, TypeError, AttributeError):
         raise LlmBadOutputError("The model returned no answer.") from None
 
     if not text:
         raise LlmBadOutputError("The model returned an empty answer.")
+    if finish != "STOP":
+        # A reply cut off by the token limit or a safety stop is not saved as if it were complete.
+        raise LlmBadOutputError(f"The model's answer was cut off ({finish}).")
     return text

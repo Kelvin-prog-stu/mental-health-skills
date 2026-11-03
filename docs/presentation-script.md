@@ -34,6 +34,9 @@ Point at the line at the bottom of Home.
 
 ### 0:30 to 1:45. Skill walkthrough and research grounding (25 points)
 
+Say once first: "When I say a code like R1 or D4, that's the label from the class research
+study for the finding behind the choice."
+
 1. Press **Start**, or press Enter: "One button. Nothing to fill in first. That's D3, keeping
    emotional cost low, and D2, one action per screen."
 2. Let two breaths run. "The orb carries the pace, so Alex doesn't have to read. Six breaths is

@@ -115,6 +115,11 @@ def save_feedback(session_id: int, self_report: str) -> dict:
         return _session(conn, session_id)
 
 
+def get_session(session_id: int) -> dict:
+    with get_connection() as conn:
+        return _session(conn, session_id)
+
+
 def list_sessions(limit: int = 50) -> list[dict]:
     with get_connection() as conn:
         rows = conn.execute(

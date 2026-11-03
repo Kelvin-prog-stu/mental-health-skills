@@ -6,6 +6,10 @@ Contracts:
 
 - `intro(mode)` -> dict(text, source, conversation_id). `source` is "model" or "fixed".
   It never raises for a model problem: the fixed text is used and the failure is saved.
+- `reflect(session_id, mode)` -> dict(text, source, conversation_id, records). The reply after
+  "How was that?", grounded in that answer and the person's saved sessions, which are read
+  with a fixed, app-owned query through the same read-only scoped views as `ask`. Like the
+  intro, a model problem gives fixed text for that answer, and the failure is saved.
 - `ask(question, mode)` -> dict(status, answer, proposed_sql, columns, rows, conversation_id,
   open_support). Status is answered, no_match, insufficient_data, rejected, query_failed,
   blocked (crisis wording), or failed (model unavailable). A failed or blocked request is
@@ -19,6 +23,7 @@ import hashlib
 import json
 import re
 
+import breathing_tips
 import config
 import database as db
 import llm_client
@@ -43,6 +48,27 @@ CRISIS_REPLY = (
 BANNED = re.compile(r"diagnos|therap|disorder|you seem|stress level|anxiety level|great job|!", re.I)
 
 
+# The reply after "How was that?" must not turn the person's answer into a claim of effect.
+REFLECTION_MAX_WORDS = 85
+REFLECTION_BANNED = re.compile(
+    r"improv|progress|getting better|feel(?:ing)? better|\bworse\b|calmer than|it work|is working|"
+    r"help(?:ed|s|ing) you|well done|proud",
+    re.I,
+)
+SELF_REPORT_WORDS = {"a_bit_calmer": "a bit calmer", "about_the_same": "about the same", "not_sure": "not sure"}
+FIXED_REFLECTIONS = {
+    "a_bit_calmer": "You said a bit calmer. It's saved with this session, and your sessions are in History whenever you want them.",
+    "about_the_same": "You said about the same. That's a fine answer, and it's saved with this session.",
+    "not_sure": "You said not sure. That's a fine answer, and it's saved with this session.",
+}
+# Fixed by the app, not proposed by the model, and still run through the read-only scoped views.
+REFLECTION_QUERY = (
+    "SELECT s.session_id, s.planned_breaths, s.cue, s.status, s.breaths_done, s.exercise_ms, "
+    "s.started_at, f.self_report FROM my_sessions s LEFT JOIN my_feedback f ON f.session_id = s.session_id "
+    "ORDER BY s.session_id DESC LIMIT 50"
+)
+
+
 class InvalidQuestionError(Exception):
     pass
 
@@ -61,11 +87,11 @@ def _load_prompts() -> tuple[dict[str, str], str]:
             sections[name] = ""
         elif name:
             sections[name] += line + "\n"
-    missing = {"purpose", "intro", "query", "answer"} - set(sections)
+    missing = {"purpose", "intro", "query", "answer", "reflection"} - set(sections)
     if missing:
         raise RuntimeError(f"{config.PROMPT_FILE.name} is missing sections: {', '.join(sorted(missing))}")
     purpose = sections["purpose"].strip()
-    prompts = {k: f"{purpose}\n\n{sections[k].strip()}" for k in ("intro", "query", "answer")}
+    prompts = {k: f"{purpose}\n\n{sections[k].strip()}" for k in ("intro", "query", "answer", "reflection")}
     return prompts, hashlib.sha256(raw).hexdigest()[:12]
 
 
@@ -100,6 +126,12 @@ def _mock_generate(stage: str, user: str) -> str:
         else:
             sql = "SELECT COUNT(*) AS completed_sessions, MAX(started_at) AS last_started FROM my_sessions WHERE status = 'completed'"
         return json.dumps({"sql": sql, "reason": "mock: counts saved sessions"})
+    if stage == "reflection":
+        answer = re.search(r"answer to this session: '([^']+)'", user)
+        count = re.search(r"Saved sessions in total: (\d+)", user)
+        suggestion = re.search(r"Suggestion chosen by the app: (.+)", user)
+        return (f"You said {answer.group(1) if answer else 'something'}. You have "
+                f"{count.group(1) if count else 'some'} sessions saved. {suggestion.group(1) if suggestion else ''} (mock reply)")
     records = user.split("Records:", 1)[-1].strip()
     return f"From your saved records: {records[:160]} (mock reply)"
 
@@ -149,6 +181,77 @@ def intro(mode: str = "live") -> dict:
         return {"text": FIXED_INTRO, "source": "fixed", "conversation_id": conversation_id, "note": str(exc)}
     db.save_message(conversation_id, "assistant", "intro", text, "ok", PROMPT_VERSION)
     return {"text": text, "source": "mock" if mode == "mock" else "model", "conversation_id": conversation_id, "note": None}
+
+
+# ---- Reply after "How was that?" -------------------------------------------------------
+
+def _reflection_context(session: dict, plan: dict) -> str:
+    profile = db.get_profile()
+    usual = profile["usual"]
+    checkin = profile["current_checkin"]
+    words = {"steady": "steady", "tense": "a bit tense", "overwhelmed": "overwhelmed"}
+    tips = "\n".join(f"- ({SOURCE_SHORT[t['source']]}) {t['text']}" for t in plan["tips"])
+    return "\n".join([
+        f"Name: Alex. Their answer to this session: '{SELF_REPORT_WORDS[session['self_report']]}'.",
+        "Facts from their saved sessions:",
+        *(f"- {f}" for f in plan["facts"]),
+        "- Usual choice: " + (f"{usual['breaths']} breaths, {usual['cue']} cue" if usual else "none yet") + ".",
+        "- Today's check-in, their own words: " + (f"'{words[checkin['feeling']]}'" if checkin else "none") + ".",
+        f"Suggestion chosen by the app: {plan['suggestion']}",
+        "Reviewed tips (name the source if you use one):",
+        tips,
+    ])
+
+
+SOURCE_SHORT = {"nhs": "NHS", "cleveland": "Cleveland Clinic", "balban": "2023 Stanford study"}
+
+
+def _numbers_grounded(text: str, context: str) -> bool:
+    """Every number in the reply must appear in the facts it was given."""
+    known = set(re.findall(r"\d+(?:\.\d+)?", context))
+    return all(n in known for n in re.findall(r"\d+(?:\.\d+)?", text))
+
+
+def reflect(session_id: int, mode: str = "live") -> dict:
+    mode = _check_mode(mode)
+    session = db.get_session(session_id)
+    if not session["self_report"]:
+        raise ValueError("Answer 'How was that?' before asking for a reply.")
+    conversation_id = db.create_conversation("question")
+    save = lambda role, stage, content, status="ok": db.save_message(conversation_id, role, stage, content, status, PROMPT_VERSION)
+    save("user", "question", f"(app request: reply to the 'How was that?' answer for session {session_id})")
+    word = SELF_REPORT_WORDS[session["self_report"]]
+    plan = None
+    try:
+        found = retrieval.run_query(REFLECTION_QUERY)
+        rows = [dict(zip(found.columns, r)) for r in found.rows]
+        save("tool", "executed_sql", REFLECTION_QUERY)
+        save("tool", "retrieval_result", json.dumps({"columns": list(found.columns), "rows": [list(r) for r in found.rows]}, default=str))
+        plan = breathing_tips.build(session, rows)
+        context = _reflection_context(session, plan)
+        text = _generate(mode, "reflection", PROMPTS["reflection"], context).strip()
+        plain = text.replace("(mock reply)", "")
+        if not text or _words(text) > REFLECTION_MAX_WORDS or BANNED.search(plain) or REFLECTION_BANNED.search(plain):
+            raise llm_client.LlmBadOutputError("The model's reply broke a length or wording rule.")
+        if not _numbers_grounded(plain, context):
+            raise llm_client.LlmBadOutputError("The model's reply used a number that is not in the saved records or tips.")
+    except (llm_client.LlmError, retrieval.QueryRejectedError, retrieval.QueryFailedError) as exc:
+        # The fixed text still carries the app's own suggestion, so a model failure loses only the wording.
+        fixed = f"You said {word}. {plan['suggestion']}" if plan else FIXED_REFLECTIONS[session["self_report"]]
+        save("tool", "error", str(exc), "failed")
+        save("assistant", "answer", fixed, "fixed_text")
+        return {"text": fixed, "source": "fixed", "conversation_id": conversation_id, "records": [],
+                "action": plan["action"] if plan else None, "sources": plan["sources"] if plan else [], "note": str(exc)}
+    save("assistant", "answer", text)
+    return {
+        "text": text,
+        "source": "mock" if mode == "mock" else "model",
+        "conversation_id": conversation_id,
+        "records": [r["session_id"] for r in rows],
+        "action": plan["action"],
+        "sources": plan["sources"],
+        "note": None,
+    }
 
 
 # ---- Questions about saved sessions (the class SQL RAG pattern) --------------------------

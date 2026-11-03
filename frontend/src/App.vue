@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, onMounted, ref } from 'vue'
 
-import { finishSession, getIntro, getPreferences, getProfile, putPreferences, sendCheckin, sendFeedback, startSession } from '@/api'
+import { finishSession, getIntro, getReflection, getPreferences, getProfile, putPreferences, sendCheckin, sendFeedback, startSession } from '@/api'
 import BreathingExercise from '@/components/BreathingExercise.vue'
 import HistoryView from '@/components/HistoryView.vue'
 import SupportPanel from '@/components/SupportPanel.vue'
@@ -21,7 +21,17 @@ const homeShownAt = ref(performance.now())
 const session = ref(null) // { clientKey, id, breaths, cue, entryMs }
 const lastResult = ref(null)
 const saveNote = ref('')
-const feedbackSent = ref('')
+// The answer shows as chosen the moment it is tapped; the line below it follows the save.
+const SELF_REPORT_OPTIONS = [
+  { value: 'a_bit_calmer', label: 'A bit calmer' },
+  { value: 'about_the_same', label: 'About the same' },
+  { value: 'not_sure', label: 'Not sure' },
+]
+const feedback = ref({ choice: null, saved: null, status: 'idle', error: '' })
+let feedbackRequest = 0
+// The model's reply to the answer. It comes after the exercise, so it may take longer than the intro.
+const REPLY_WAIT_MS = 25000
+const reply = ref({ status: 'idle', text: '', source: '', action: null, sources: [] })
 const startButton = ref(null)
 
 const seconds = computed(() => choice.value.breaths * 10)
@@ -58,13 +68,19 @@ function setMode(value) {
   loadIntro()
 }
 
+// The free model can take 20 s or more; after this the fixed text is shown instead.
+const INTRO_WAIT_MS = 10000
+let introRequest = 0
+
 async function loadIntro() {
+  const thisRequest = ++introRequest
   intro.value = { text: '', source: 'loading' }
   try {
-    intro.value = await getIntro(mode.value)
+    const reply = await getIntro(mode.value, AbortSignal.timeout(INTRO_WAIT_MS))
+    if (thisRequest === introRequest) intro.value = reply
   } catch {
-    // Backend unreachable: the fixed text is shipped with the page, so Start still works.
-    intro.value = { text: FIXED_INTRO, source: 'fixed', note: 'backend unreachable' }
+    // Slow or unreachable: the fixed text is shipped with the page, so Start still works.
+    if (thisRequest === introRequest) intro.value = { text: FIXED_INTRO, source: 'fixed', note: 'model slow or unreachable' }
   }
 }
 
@@ -127,7 +143,8 @@ function newKey() {
 function start() {
   const entryMs = Math.round(performance.now() - homeShownAt.value)
   saveNote.value = ''
-  feedbackSent.value = ''
+  feedback.value = { choice: null, saved: null, status: 'idle', error: '' }
+  reply.value = { status: 'idle', text: '', source: '', action: null, sources: [] }
   session.value = { clientKey: newKey(), id: null, breaths: choice.value.breaths, cue: choice.value.cue, entryMs }
   view.value = 'exercise'
   window.scrollTo(0, 0)
@@ -160,14 +177,40 @@ async function onFinished(result) {
   }
 }
 
-async function answer(value, label) {
-  if (!session.value?.id) return
+async function answer(value) {
+  if (!session.value?.id || value === feedback.value.choice) return
+  const thisRequest = ++feedbackRequest
+  const saved = feedback.value.saved
+  feedback.value = { choice: value, saved, status: 'saving', error: '' }
   try {
     await sendFeedback(session.value.id, value)
-    feedbackSent.value = `Saved: "${label}"`
+    if (thisRequest !== feedbackRequest) return
+    feedback.value = { choice: value, saved: value, status: 'saved', error: '' }
+    loadReply(value, thisRequest)
   } catch (error) {
-    feedbackSent.value = `Your answer was not saved. ${error.message}`
+    // Show what is really stored: go back to the last saved answer, if any.
+    if (thisRequest === feedbackRequest) feedback.value = { choice: saved, saved, status: 'failed', error: error.message }
   }
+}
+
+async function loadReply(value, thisRequest) {
+  reply.value = { status: 'loading', text: '', source: '', action: null, sources: [] }
+  try {
+    const result = await getReflection(session.value.id, mode.value, AbortSignal.timeout(REPLY_WAIT_MS))
+    if (thisRequest === feedbackRequest) {
+      reply.value = { status: 'done', text: result.text, source: result.source, action: result.action ?? null, sources: result.sources ?? [] }
+    }
+  } catch {
+    if (thisRequest !== feedbackRequest) return
+    const label = SELF_REPORT_OPTIONS.find((o) => o.value === value)?.label.toLowerCase()
+    reply.value = { status: 'done', text: `You said ${label}. It's saved with this session.`, source: 'fixed', action: null, sources: [] }
+  }
+}
+
+// The suggestion's button only fills in the length and cue; Alex still presses it to start.
+function tryAction(action) {
+  choice.value = { breaths: action.breaths, cue: action.cue }
+  start()
 }
 
 async function toggleFewerWords() {
@@ -248,7 +291,7 @@ onMounted(() => {
       </p>
 
       <p v-if="!contracted" class="intro" aria-live="polite">
-        <template v-if="intro.source === 'loading'"><span class="muted">...</span></template>
+        <template v-if="intro.source === 'loading'"><span class="muted">Writing a short note for you...</span></template>
         <template v-else>{{ intro.text }}</template>
         <span v-if="intro.source !== 'loading'" class="source">
           {{ intro.source === 'model' ? 'Written by the model' : intro.source === 'mock' ? 'Mock reply (test mode)' : 'Fixed text' }}
@@ -301,11 +344,39 @@ onMounted(() => {
       <template v-if="session.id">
         <p class="muted">How was that? (optional)</p>
         <div class="chips">
-          <button type="button" @click="answer('a_bit_calmer', 'A bit calmer')">A bit calmer</button>
-          <button type="button" @click="answer('about_the_same', 'About the same')">About the same</button>
-          <button type="button" @click="answer('not_sure', 'Not sure')">Not sure</button>
+          <button
+            v-for="option in SELF_REPORT_OPTIONS"
+            :key="option.value"
+            type="button"
+            :class="{ chosen: feedback.choice === option.value }"
+            :aria-pressed="feedback.choice === option.value"
+            @click="answer(option.value)"
+          >
+            <span v-if="feedback.choice === option.value" class="tick" aria-hidden="true">&#10003;</span>
+            {{ option.label }}
+          </button>
         </div>
-        <p v-if="feedbackSent" class="small" role="status">{{ feedbackSent }}</p>
+        <p class="feedback-status small" role="status">
+          <template v-if="feedback.status === 'saving'">Saving...</template>
+          <template v-else-if="feedback.status === 'saved'">Saved as your answer. Tap another to change it.</template>
+          <span v-else-if="feedback.status === 'failed'" class="problem-text">Not saved: {{ feedback.error }} Tap again to retry.</span>
+        </p>
+        <div v-if="reply.status !== 'idle'" class="reply" aria-live="polite">
+          <p v-if="reply.status === 'loading'" class="muted">Looking at your sessions...</p>
+          <template v-else>
+            <p>{{ reply.text }}</p>
+            <button v-if="reply.action" type="button" class="secondary reply-action" @click="tryAction(reply.action)">
+              {{ reply.action.label }} ({{ reply.action.breaths * 10 }} s)
+            </button>
+            <p v-if="reply.sources.length" class="reply-sources">
+              Tip from:
+              <template v-for="(src, i) in reply.sources" :key="src.url">
+                <a :href="src.url" target="_blank" rel="noopener noreferrer">{{ src.name }}</a><span v-if="i < reply.sources.length - 1">, </span>
+              </template>
+            </p>
+            <span class="source">{{ reply.source === 'model' ? 'Written by the model from your saved sessions' : reply.source === 'mock' ? 'Mock reply (test mode)' : 'Fixed text' }}</span>
+          </template>
+        </div>
       </template>
       <p v-if="saveNote" class="problem" role="alert">{{ saveNote }}</p>
 

@@ -35,11 +35,13 @@ async function request(path, options = {}) {
   return response.json()
 }
 
-export const getIntro = (mode) => request(`/intro?mode=${encodeURIComponent(mode)}`)
+export const getIntro = (mode, signal) => request(`/intro?mode=${encodeURIComponent(mode)}`, { signal })
 export const getPreferences = () => request('/preferences')
 export const putPreferences = (prefs) => request('/preferences', { method: 'PUT', body: JSON.stringify(prefs) })
 export const startSession = (body) => request('/sessions', { method: 'POST', body: JSON.stringify(body) })
 export const finishSession = (id, body) => request(`/sessions/${id}`, { method: 'PATCH', body: JSON.stringify(body) })
+export const getReflection = (id, mode, signal) =>
+  request(`/sessions/${id}/reflection?mode=${encodeURIComponent(mode)}`, { method: 'POST', signal })
 export const sendFeedback = (id, selfReport) =>
   request(`/sessions/${id}/feedback`, { method: 'POST', body: JSON.stringify({ self_report: selfReport }) })
 export const listSessions = () => request('/sessions')

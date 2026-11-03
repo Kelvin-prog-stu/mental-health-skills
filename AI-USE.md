@@ -98,3 +98,7 @@ headless-Chrome scripts used in that project.
     built from history, and a check-in-aware introduction. It chose not to copy the reference's
     clinical screening. While testing, every Gemini model it tried failed at some point (timeouts and
     503s); it added an automatic fallback across models rather than changing the default again.
+13. **Reply after the answer (Oct 27).** I asked for a Gemini reply grounded in Alex's answer and
+    history. The agent made the backend read the records with a fixed read-only query instead of
+    letting the model write SQL, and added a check that refuses any reply containing a number not
+    in those records, plus a word filter so a reply cannot claim the exercise helped.
