@@ -102,3 +102,21 @@ headless-Chrome scripts used in that project.
     history. The agent made the backend read the records with a fixed read-only query instead of
     letting the model write SQL, and added a check that refuses any reply containing a number not
     in those records, plus a word filter so a reply cannot claim the exercise helped.
+14. **Failed approach: a cut-off reply was saved as complete (Oct 27).** A live reply ended with
+    "If you want" and was saved and shown as finished. Evidence: the saved row in `messages`, and a
+    direct call to each model in the chain (3.5 Flash-Lite took 13 s, past the 12 s limit, so
+    requests fell through to other models). **Decision:** refuse any reply whose finish reason is
+    not STOP, and give each model 8 s before the next one is tried.
+15. **Revised: replies joined two true numbers into a false claim (Nov 2).** After I asked for
+    replies built from real data and sourced tips, a live reply said "4 times out of your 17 recent
+    sessions"; 4 was the count of earlier answers and 17 the count of sessions. The number check
+    passed it because both numbers existed. The agent reworded the facts so each count names what
+    it counts. Then it wrote `checks/scenarios.py` (15 scenarios, 3 behavior checks); the first live
+    run failed one scenario on a network error and the rerun passed, and both are recorded.
+
+### Part 3.3 (2026-11-02 and 03)
+
+Tool and model: Claude Code with Claude Opus 5.5 (`claude-opus-5-5`). It read three tip sources on
+the web (NHS breathing exercises for stress, Cleveland Clinic diaphragmatic breathing, Balban et
+al. 2023 on PMC) and kept only what each page says, with links. It ran the clean-checkout test
+and drafted the Part 3.3 report. I chose what to build and reviewed the replies.

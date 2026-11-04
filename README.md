@@ -23,7 +23,7 @@ What is finished and what is not: [docs/verification.md](docs/verification.md) a
 [handoffs/current.md](handoffs/current.md). Design and its changes since Part 3.1:
 [docs/design-pipeline.md](docs/design-pipeline.md).
 
-## Run it (Windows, checked on this machine on 2026-10-26)
+## Run it (Windows; checked from a fresh clone on 2026-11-03)
 
 Requirements: Python 3.12, Node.js 20 or newer, Google Chrome (only for the browser check).
 
@@ -55,8 +55,11 @@ Open http://localhost:5180. The database is created at `data/app.sqlite3` on fir
 
 Checks:
 
-- `backend\.venv\Scripts\python.exe backend\checks\check_app.py`: 28 backend checks with the
+- `backend\.venv\Scripts\python.exe backend\checks\check_app.py`: 44 backend checks with the
   mocked model on a throwaway database. No key or network needed.
+- `backend\.venv\Scripts\python.exe backend\checks\scenarios.py`: the 15 fictional scenarios
+  and 3 behavior checks from Part 3.3, mocked, written to `docs/evidence/scenarios/`. Add
+  `--live` to repeat them with the real model (needs a key; at most 20 calls).
 - `node docs\evidence\e2e_check.mjs <output folder>`: drives the running app in headless
   Chrome with the mocked model and saves screenshots and a log (add `--live` for the live model).
 
