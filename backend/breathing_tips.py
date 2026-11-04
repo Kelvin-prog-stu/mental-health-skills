@@ -64,11 +64,13 @@ def build(session: dict, rows: list[dict]) -> dict:
         f"{session['cue']} cue, about {round((session['exercise_ms'] or 0) / 1000)} seconds measured.",
         f"Saved sessions in total: {len(rows)} ({len(completed)} completed, {len(rows) - len(completed)} stopped).",
         f"Sessions in the last 7 days: {len(week)}. Sessions today: {len(today)}.",
-        f"Breathing time today: {seconds_today} seconds (about {minutes_today} minutes).",
+        (f"Breathing time saved today: {seconds_today} seconds (about {minutes_today} minutes)."
+         if seconds_today else "No breathing time saved today yet."),
     ]
     if earlier_answers:
         top, count = earlier_answers.most_common(1)[0]
-        facts.append(f"Earlier answers (last {sum(earlier_answers.values())}): '{top.replace('_', ' ')}' {count} times.")
+        given = sum(earlier_answers.values())
+        facts.append(f"Of their earlier 'How was that?' answers ({given} given), '{top.replace('_', ' ')}' was the answer {count} times.")
 
     # One suggestion, chosen by fixed rules. Each one is something the app can really do.
     if stopped_early and session["planned_breaths"] == 8:
@@ -82,8 +84,9 @@ def build(session: dict, rows: list[dict]) -> dict:
         tip_ids = ["nhs_belly", "cleveland_hands"]
     elif minutes_today < DAILY_MINUTES_GUIDE:
         left = max(1, round(DAILY_MINUTES_GUIDE - minutes_today))
-        suggestion = (f"You have about {minutes_today} minutes today. Starting again adds about one more minute; "
-                      f"about {left} more would reach the 5 minutes the NHS guide mentions, only if you want to.",
+        so_far = f"You have about {minutes_today} minutes today. " if seconds_today else ""
+        suggestion = (f"{so_far}Starting again adds about one more minute; about {left} more minutes would reach "
+                      f"the 5 minutes the NHS guide mentions, only if you want to.",
                       {"label": "Another round", "breaths": session["planned_breaths"], "cue": session["cue"]})
         tip_ids = ["nhs_minutes"]
     else:
