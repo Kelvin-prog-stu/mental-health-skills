@@ -5,23 +5,24 @@ Kelvin Asiedu, IST 402.
 ## Project access
 
 - Repository: https://github.com/Kelvin-prog-stu/mental-health-skills (public)
-- Submitted commit: `{COMMIT}` on `main` (the merge of branch `part-3-3`).
-- Run it: README section "Run it". It was followed step by step from a fresh clone on
+- Submitted commit: `0d78ced4d490c0252cd3780e2c6b50ab53d176f8` on `main` (the merge of branch `part-3-3`).
+  This report was updated in the commit after it with these links and changes nothing else.
+- Run it: [README.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/0d78ced4d490c0252cd3780e2c6b50ab53d176f8/README.md), section "Run it". It was followed step by step from a fresh clone on
   2026-11-03 (details below). Without a Gemini key the app still runs on fixed text.
 
 | Evidence | Link |
 | --- | --- |
-| Demonstration of the finished app | [docs/demo/a3-part3-demo.mp4](../../docs/demo/a3-part3-demo.mp4) (captioned, no audio) |
-| Process screencast: one failure, the evidence, the decision | [docs/demo/a3-part3-process.mp4](../../docs/demo/a3-part3-process.mp4) (captioned, no audio) |
-| 15 scenarios and 3 behavior checks, MOCK | [docs/evidence/scenarios/scenarios-mock.md](../../docs/evidence/scenarios/scenarios-mock.md) |
-| The same, LIVE (two runs) | [docs/evidence/scenarios/scenarios-live.md](../../docs/evidence/scenarios/scenarios-live.md) |
-| Verification record, Part 3.3 section | [docs/verification.md](../../docs/verification.md) |
-| Scenario runner | [backend/checks/scenarios.py](../../backend/checks/scenarios.py) |
-| Backend checks (46, MOCK) | [backend/checks/check_app.py](../../backend/checks/check_app.py) |
-| Design and every change since Part 3.1 | [docs/design-pipeline.md](../../docs/design-pipeline.md), sections 13 and 14 |
-| The model's instructions | [prompts/breathing-guide.md](../../prompts/breathing-guide.md) |
-| Reviewed tips and their sources | [backend/breathing_tips.py](../../backend/breathing_tips.py) |
-| AI use and evidence log | [AI-USE.md](../../AI-USE.md) |
+| Demonstration of the finished app | [docs/demo/a3-part3-demo.mp4](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/0d78ced4d490c0252cd3780e2c6b50ab53d176f8/docs/demo/a3-part3-demo.mp4) (captioned, no audio) |
+| Process screencast: one failure, the evidence, the decision | [docs/demo/a3-part3-process.mp4](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/0d78ced4d490c0252cd3780e2c6b50ab53d176f8/docs/demo/a3-part3-process.mp4) (captioned, no audio) |
+| 15 scenarios and 3 behavior checks, MOCK | [docs/evidence/scenarios/scenarios-mock.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/0d78ced4d490c0252cd3780e2c6b50ab53d176f8/docs/evidence/scenarios/scenarios-mock.md) |
+| The same, LIVE (two runs) | [docs/evidence/scenarios/scenarios-live.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/0d78ced4d490c0252cd3780e2c6b50ab53d176f8/docs/evidence/scenarios/scenarios-live.md) |
+| Verification record, Part 3.3 section | [docs/verification.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/0d78ced4d490c0252cd3780e2c6b50ab53d176f8/docs/verification.md) |
+| Scenario runner | [backend/checks/scenarios.py](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/0d78ced4d490c0252cd3780e2c6b50ab53d176f8/backend/checks/scenarios.py) |
+| Backend checks (46, MOCK) | [backend/checks/check_app.py](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/0d78ced4d490c0252cd3780e2c6b50ab53d176f8/backend/checks/check_app.py) |
+| Design and every change since Part 3.1 | [docs/design-pipeline.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/0d78ced4d490c0252cd3780e2c6b50ab53d176f8/docs/design-pipeline.md), sections 13 and 14 |
+| The model's instructions | [prompts/breathing-guide.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/0d78ced4d490c0252cd3780e2c6b50ab53d176f8/prompts/breathing-guide.md) |
+| Reviewed tips and their sources | [backend/breathing_tips.py](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/0d78ced4d490c0252cd3780e2c6b50ab53d176f8/backend/breathing_tips.py) |
+| AI use and evidence log | [AI-USE.md](https://github.com/Kelvin-prog-stu/mental-health-skills/blob/0d78ced4d490c0252cd3780e2c6b50ab53d176f8/AI-USE.md) |
 
 ## What is complete
 
