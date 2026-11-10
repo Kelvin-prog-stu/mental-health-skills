@@ -1,6 +1,6 @@
 <script setup>
 // The guided sequence. The app, not the model, owns every step and the timer.
-// Timing comes from the browser clock; pauses (Support open, tab hidden) are excluded and
+// Timing comes from the browser clock; pauses (Pause button, Support open, tab hidden) are excluded and
 // reported separately. Nothing here waits on the network.
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
@@ -17,6 +17,7 @@ const emit = defineEmits(['finished'])
 
 const elapsed = ref(0) // exercise time so far, pauses excluded
 const hiddenPause = ref(false)
+const manualPause = ref(false)
 const stopButton = ref(null)
 const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
 
@@ -26,7 +27,9 @@ let startedAt = 0
 let pausedMs = 0
 let done = false
 
-const isPaused = computed(() => props.externalPause || hiddenPause.value)
+const isPaused = computed(() => props.externalPause || hiddenPause.value || manualPause.value)
+// Paused by the person or by hiding the tab; Support has its own way back.
+const selfPaused = computed(() => hiddenPause.value || manualPause.value)
 const total = computed(() => props.breaths * CYCLE_MS)
 const breathIndex = computed(() => Math.min(Math.floor(elapsed.value / CYCLE_MS), props.breaths - 1))
 const within = computed(() => elapsed.value - breathIndex.value * CYCLE_MS)
@@ -66,6 +69,15 @@ function finish(status) {
 
 function stop() {
   finish('stopped')
+}
+
+function togglePause() {
+  if (selfPaused.value) {
+    hiddenPause.value = false
+    manualPause.value = false
+  } else {
+    manualPause.value = true
+  }
 }
 
 function onVisibility() {
@@ -124,13 +136,15 @@ defineExpose({ stop })
       <i :style="{ width: `${progress * 100}%` }"></i>
     </div>
 
-    <div v-if="hiddenPause && !externalPause" class="paused-box">
-      <p>Paused while the page was hidden.</p>
-      <button type="button" class="primary" @click="hiddenPause = false">Resume</button>
-    </div>
+    <p v-if="hiddenPause && !externalPause" class="paused-note">Paused while the page was hidden.</p>
 
-    <button ref="stopButton" type="button" class="stop" @click="stop">Stop</button>
-    <p class="hint">Stop any time. Nothing is lost by stopping.</p>
+    <div class="controls">
+      <button type="button" class="pause" :class="{ resume: selfPaused }" :disabled="externalPause" @click="togglePause">
+        {{ selfPaused ? 'Resume' : 'Pause' }}
+      </button>
+      <button ref="stopButton" type="button" class="stop" @click="stop">Stop</button>
+    </div>
+    <p class="hint">Pause or stop any time. Nothing is lost by stopping.</p>
   </section>
 </template>
 
@@ -158,8 +172,14 @@ defineExpose({ stop })
 .count .dim { color: var(--line-strong); }
 .progress { width: min(320px, 90%); height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin: 0.8rem 0; }
 .progress i { display: block; height: 100%; background: var(--cue-edge); }
-.paused-box { text-align: center; }
-.stop { width: min(320px, 90%); min-height: 56px; padding: 0.9rem; font-size: 1.15rem; font-weight: 650; border: 2px solid var(--line-strong); border-radius: 18px; background: rgb(255 255 255 / 85%); color: var(--ink); box-shadow: var(--shadow); }
+.paused-note { margin: 0; color: var(--muted); }
+.controls { display: flex; gap: 0.75rem; width: min(320px, 90%); }
+.controls > button { flex: 1; }
+.pause { min-height: 56px; padding: 0.9rem; font-size: 1.15rem; font-weight: 650; border: 2px solid var(--line-strong); border-radius: 18px; background: rgb(255 255 255 / 85%); color: var(--ink); box-shadow: var(--shadow); }
+.pause:hover:not(:disabled) { border-color: var(--brand); }
+.pause.resume { background: var(--brand); border-color: var(--brand); color: #fff; }
+.pause:disabled { opacity: 0.5; }
+.stop { min-height: 56px; padding: 0.9rem; font-size: 1.15rem; font-weight: 650; border: 2px solid var(--line-strong); border-radius: 18px; background: rgb(255 255 255 / 85%); color: var(--ink); box-shadow: var(--shadow); }
 .stop:hover { border-color: var(--brand); }
 .progress { height: 8px; border-radius: 4px; }
 .progress i { background: linear-gradient(90deg, var(--cue-edge), var(--accent)); }

@@ -1,0 +1,26 @@
+[
+ {
+  "label": "overwhelmed_buttons",
+  "value": 4
+ },
+ {
+  "label": "home_intro",
+  "value": "You said you're a bit tense. Your usual six breaths with the circle are ready when you are.\nWritten by the model"
+ },
+ {
+  "label": "end",
+  "value": "That was 6 breaths. |  | Measured: 60.0 s (plus 10.1 s paused)."
+ },
+ {
+  "label": "reply",
+  "value": "You said about the same. Before this one, you answered 'about the same' 2 times. You could try 8 breaths (80 seconds) next time if you want a little longer. The NHS guide suggests breathing in through the nose and out through the mouth, letting the breath go as deep into the belly as is comfortable, without forcing it.\n\nTry 8 breaths (80 s)\n\nTip from: NHS: Breathing exercises for stress, Cleveland Clinic: Diaphragmatic breathing\n\nWritten by the model from your saved sessions"
+ },
+ {
+  "label": "history_answer",
+  "value": "Based on your records for the past 7 days, you finished 4 sessions and stopped 1 session.\n\nHow this was answered\nSELECT status, count(*) FROM my_sessions WHERE started_at >= datetime('now', '-7 days') GROUP BY status LIMIT 20\n\nRecords: [[\"completed\",4],[\"stopped\",1]]"
+ },
+ {
+  "label": "stopped",
+  "value": "Stopped after 0 breaths. That is fine."
+ }
+]

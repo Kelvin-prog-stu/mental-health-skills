@@ -95,6 +95,11 @@ def feedback(session_id: int, body: Feedback) -> dict:
     return db.save_feedback(session_id, body.self_report)
 
 
+@app.post("/api/sessions/{session_id}/reflection")
+def reflection(session_id: int, mode: ModelMode = "live") -> dict:
+    return assistant.reflect(session_id, mode)
+
+
 @app.get("/api/sessions")
 def sessions(limit: int = 50) -> dict:
     return {"sessions": db.list_sessions(min(max(limit, 1), 200))}

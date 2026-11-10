@@ -133,6 +133,31 @@ with TestClient(main.app) as c:
     check("the profile's usual comes from history (most common recent choice)", prof["usual"] is not None and prof["usual"]["based_on"] == 2 and prof["sessions"] == 2, prof["usual"])
     check("the check-in does not change any observed session record", snapshot()["exercise_sessions"] == before["exercise_sessions"], "unchanged")
 
+    # ---- Reply after "How was that?" ----------------------------------------------------
+    before_reply = snapshot()
+    reply = c.post(f"/api/sessions/{sid}/reflection", params={"mode": "mock"}).json()
+    check("the reply uses the person's own answer and the saved session count", reply["source"] == "mock" and "not sure" in reply["text"] and "of your 2 saved sessions" in reply["text"], reply["text"])
+    check("the reply names the saved records it was built from", sorted(reply["records"]) == [sid, s2], reply["records"])
+    reply_steps = [r[0] for r in rows("SELECT stage FROM messages WHERE conversation_id = ? ORDER BY message_id", reply["conversation_id"])]
+    check("the reply is saved with the query and records it used", reply_steps == ["question", "executed_sql", "retrieval_result", "answer"], reply_steps)
+    failed_reply = c.post(f"/api/sessions/{sid}/reflection", params={"mode": "fail"}).json()
+    check("a failed model gives fixed text (answer plus the app's suggestion), not an invented reply", failed_reply["source"] == "fixed" and failed_reply["text"].startswith("You said not sure.") and len(failed_reply["text"]) > 20, failed_reply["text"])
+    check("the reply carries the app's suggestion and links to the tip's source", "(mock reply)" in reply["text"] and reply["sources"] and all(src["url"].startswith("https://") for src in reply["sources"]), [s["name"] for s in reply["sources"]])
+    import breathing_tips
+    base = {"session_id": 9, "status": "completed", "breaths_done": 6, "planned_breaths": 6, "cue": "circle", "exercise_ms": 60000, "self_report": "about_the_same", "started_at": None}
+    six_done = [{**base, "session_id": i} for i in (9, 8, 7)]
+    plan = breathing_tips.build(base, six_done)
+    check("after several finished 6-breath sessions, 'about the same' gets an offer of 8 breaths", plan["action"] and plan["action"]["breaths"] == 8, plan["suggestion"])
+    stopped8 = {**base, "status": "stopped", "planned_breaths": 8, "breaths_done": 2}
+    check("stopping an 8-breath session gets an offer of the shorter 6", breathing_tips.build(stopped8, [stopped8])["action"]["breaths"] == 6, "6 breaths")
+    check("no reply before the person answers (422)", c.post(f"/api/sessions/{s2}/reflection", params={"mode": "mock"}).status_code == 422, "422")
+    check("asking for a reply changes no session or answer", snapshot() == before_reply, "unchanged")
+    check("a reply with a number not in the records is refused", not assistant._numbers_grounded("You have 9 sessions.", "Saved sessions in total: 2"), "refused")
+    facts = ["You have finished 4 of your 5 saved sessions."]
+    check("a reply that restates the counts wrongly is refused (Nov 10: '5 completed out of 5')", not assistant._facts_quoted("You have 5 completed sessions saved out of 5 total.", facts, "8 breaths"), "refused")
+    check("a reply that copies the app's fact sentence is accepted", assistant._facts_quoted("You said not sure. You have finished 4 of your 5 saved sessions. 8 breaths is there.", facts, "8 breaths"), "accepted")
+    check("a reply that claims the exercise helped is refused", bool(assistant.REFLECTION_BANNED.search("This is helping you make progress.")), "refused")
+
     # ---- Health and persistence --------------------------------------------------------
     health = c.get("/api/health").json()
     check("health reports key status, never the key", "status" in health["model"] and "AIza" not in json.dumps(health), health["model"]["status"])

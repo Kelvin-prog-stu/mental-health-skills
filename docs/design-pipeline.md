@@ -369,3 +369,20 @@ reference is optional.
 Checks: `check_app.py` 33 of 33 (5 new for check-in and profile); the check-in, contraction, override,
 usual pill and profile card were driven in headless Chrome; live: the introduction said "You said you're
 a bit tense. Your usual six breaths with the circle are ready...".
+
+Later the same day: a **Pause** button next to Stop on the exercise screen (it becomes **Resume**),
+so Alex can pause without opening Support. Paused time is still excluded from the measured time and
+saved as `paused_ms` (checked: a run paused about 3 s saved `paused_ms` 3063). The Home introduction
+now waits at most 10 s for the model, then shows the fixed text, because live replies took up to 22 s.
+
+**Reply after "How was that?"** When Alex taps an answer, it is saved first, then
+`POST /api/sessions/{id}/reflection` asks Gemini for a reply of at most 40 words. The backend reads
+Alex's last 10 sessions and earlier answers with a fixed, app-owned query through the same
+read-only scoped views as History questions (the model never writes SQL here), adds the profile's
+usual choice and today's check-in, and sends only those facts. The reply is refused and replaced
+with fixed text for that answer if it is too long, uses banned wording (praise, "helped",
+"progress", "better", comparing feelings), or contains a number that is not in the records. Each
+reply is saved as question, executed_sql, retrieval_result and answer, like the RAG questions. The
+browser waits 10 s, then shows fixed text. Checks: `check_app.py` 41 of 41 (8 new); live, all three
+answers replied in about 1.5 s, for example "You said about the same, and stopping is fine. You
+have 13 saved sessions, and 8 breaths is there if you want it next time." (13 matched the table).

@@ -3,6 +3,75 @@
 **MOCK** means the model was replaced by fixed replies (repeatable, no network). **LIVE** means
 real requests to Gemini `gemini-3.5-flash-lite`. All data is fictional (demo user `alex-demo`).
 
+## Part 3.3 (2026-11-02 and 03)
+
+### Scenarios and behavior checks
+
+`backend/checks/scenarios.py` runs 15 fictional scenarios and 3 behavior checks against the API
+on a throwaway database. Full tables with expected and observed results:
+[scenarios-mock.md](evidence/scenarios/scenarios-mock.md) and
+[scenarios-live.md](evidence/scenarios/scenarios-live.md).
+
+| Run | Result | Model calls |
+| --- | --- | --- |
+| MOCK | 18 of 18 | 0 (any live call fails the run) |
+| LIVE, first run | 17 of 18. S14 failed: a network error on the way to Gemini (ConnectError), reported honestly as failed; S8 fell back to fixed text | 7 |
+| LIVE, rerun minutes later | 18 of 18 | 7 |
+
+Behavior checks: **B1** no saved model reply breaks the wording rules and no failed or blocked
+request has an invented reply; **B2** model calls never change observed records; **B3** every
+completed guided sequence fits 90 s, with pauses apart.
+
+### Screen checks (real interface, MOCK, fresh database)
+
+Run in the app's browser pane on 2026-11-03 against a fresh `data/app.sqlite3` (the old one is
+backed up in `data/`, ignored by Git).
+
+| # | Action | Expected | Observed |
+| --- | --- | --- | --- |
+| V1 | Open Home with no history | Optional check-in question shown | "How are you arriving right now?" shown |
+| V2 | Tap Overwhelmed | Home shows less; Start, Support and an undo stay | Buttons in the main area went from 6 to 4; Start, Support and "Show everything" present; "You said overwhelmed, so this screen shows less." |
+| V3 | Change, tap A bit tense | Length 6 breaths | "Start breathing (60 s)"; no "Use 8 instead" because a new user's choice was already 6 (the override only appears when the usual was 8) |
+| V4 | Start, Pause 3 s, Resume | Counter shows paused; button becomes Resume; time stops | "Breath 1 of 6 · paused", button "Resume", then back to "Breath 1 of 6". The pane was hidden, so the browser did not animate and the progress value stayed 0 throughout; the Oct 27 run in a visible pane showed it hold at 12 for 3 s and move to 16 after Resume, with `paused_ms` 3063 saved |
+| V5 | Open Support during the exercise | Exercise paused; numbers listed; Pause disabled while Support is open | Paused; 988 listed; "The exercise is paused while this is open."; Pause disabled |
+| V6 | Stop, tap About the same | Choice shows at once; then a reply with linked sources | "✓ About the same" and "Saving..." immediately; the reply (mock) named the answer and count, offered Pause or the text cue, and linked Cleveland Clinic and NHS |
+
+### Clean checkout (README followed literally)
+
+2026-11-03: `git clone --branch part-3-3` into an empty folder, then the README steps. Python
+venv and `pip install -r requirements.txt` worked (fastapi 0.141.1, httpx 0.28.1);
+`check_app.py` 44 of 44; `scenarios.py` 18 of 18. With the empty key from `.env.example`, the
+backend started (on port 8101, because 8100 was in use), created `data/app.sqlite3`, reported
+"key is not configured" and served the fixed introduction. `npm install` and `npm run build`
+succeeded. Same machine, so this does not prove another computer works; see "Not verified yet".
+
+### Live replies after "How was that?"
+
+| Session facts | Reply (LIVE) | Time |
+| --- | --- | --- |
+| Finished 6 breaths, answer "about the same", 17 sessions | "You said it was 'about the same', which is what you said four times before. ... The NHS guide suggests keeping the breathing going for at least 5 minutes, as part of a daily routine." | 4.7 s |
+| Stopped at 0 breaths, answer "not sure" | "You said 'not sure'. You have 17 saved sessions in total ... You might try the Pause button if you need a moment, or use the text cue if the circle is distracting. The Cleveland Clinic suggests starting small and building up the time gradually." | 4.6 s |
+
+An earlier version said "4 times out of your 17 recent sessions", joining two separate facts
+(answers given and sessions saved). The facts were reworded so each count says what it counts.
+
+### Demo recording and a second wrong count (2026-11-10)
+
+The first demo take (live model) showed the reply "You have 5 completed sessions saved out of 5
+total"; the saved rows had 4 completed and 1 stopped. The take was dropped. After the fix (the app
+writes the fact sentences and the model must copy one; `_facts_quoted`), `check_app.py` passed 46
+of 46, three live replies on the same data said "You have finished 4 of your 6 saved sessions.",
+and the final take's reply said "Before this one, you answered 'about the same' 2 times.", which
+matches the two seeded answers. The values the recorder read from the page are in
+[demo-3-3-observed.json](evidence/demo-3-3-observed.json). The History answer in the take
+("finished 4 sessions and stopped 1") matches the rows it shows.
+
+### Not verified yet (Part 3.3)
+
+Another computer; a screen reader; Firefox or Safari; a real phone; a human's entry time; the
+reply's wording across many live runs (only a handful were run); whether the tips are useful to
+anyone, which this project cannot establish.
+
 ## Part 3.2 (2026-10-26)
 
 ### Backend checks, MOCK, throwaway database

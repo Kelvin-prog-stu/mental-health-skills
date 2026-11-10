@@ -31,7 +31,11 @@ async function load() {
     const [s, c, p] = await Promise.all([listSessions(), listConversations(), getProfile()])
     profile.value = p
     sessions.value = s.sessions
-    conversations.value = c.conversations.filter((x) => x.purpose === 'question')
+    // Only questions Alex typed. Replies after "How was that?" are saved the same way (with the
+    // app's own request as the first message) but were not asked here, so they are left out.
+    conversations.value = c.conversations.filter(
+      (x) => x.purpose === 'question' && !x.messages[0]?.content.startsWith('(app request:'),
+    )
   } catch (error) {
     loadError.value = `History could not load. ${error.message}`
   } finally {

@@ -98,3 +98,33 @@ headless-Chrome scripts used in that project.
     built from history, and a check-in-aware introduction. It chose not to copy the reference's
     clinical screening. While testing, every Gemini model it tried failed at some point (timeouts and
     503s); it added an automatic fallback across models rather than changing the default again.
+13. **Reply after the answer (Oct 27).** I asked for a Gemini reply grounded in Alex's answer and
+    history. The agent made the backend read the records with a fixed read-only query instead of
+    letting the model write SQL, and added a check that refuses any reply containing a number not
+    in those records, plus a word filter so a reply cannot claim the exercise helped.
+14. **Failed approach: a cut-off reply was saved as complete (Oct 27).** A live reply ended with
+    "If you want" and was saved and shown as finished. Evidence: the saved row in `messages`, and a
+    direct call to each model in the chain (3.5 Flash-Lite took 13 s, past the 12 s limit, so
+    requests fell through to other models). **Decision:** refuse any reply whose finish reason is
+    not STOP, and give each model 8 s before the next one is tried.
+15. **Revised: replies joined two true numbers into a false claim (Nov 2).** After I asked for
+    replies built from real data and sourced tips, a live reply said "4 times out of your 17 recent
+    sessions"; 4 was the count of earlier answers and 17 the count of sessions. The number check
+    passed it because both numbers existed. The agent reworded the facts so each count names what
+    it counts. Then it wrote `checks/scenarios.py` (15 scenarios, 3 behavior checks); the first live
+    run failed one scenario on a network error and the rerun passed, and both are recorded.
+
+16. **Revised again: rewording the facts was not enough (Nov 10).** While the agent recorded the
+    demo, a live reply said "You have 5 completed sessions saved out of 5 total" when Alex had 4
+    finished and 1 stopped; the number check passed it because 5 was real. The agent dropped that
+    take, made the app write the fact sentences itself, required the model to copy one word for
+    word, and refused any other number (digits or words) not in the suggestion or tip. Checks
+    46 of 46; three live replies copied the sentence correctly; the demo was recorded again.
+
+### Part 3.3 (2026-11-02 and 03)
+
+Tool and model: Claude Code with Claude Opus 5.5 (`claude-opus-5-5`). It read three tip sources on
+the web (NHS breathing exercises for stress, Cleveland Clinic diaphragmatic breathing, Balban et
+al. 2023 on PMC) and kept only what each page says, with links. It ran the clean-checkout test
+and drafted the Part 3.3 report. On Nov 10, at my request, it recorded both Part 3.3 videos
+(captioned, no audio) in headless Chrome. I chose what to build and reviewed the replies.

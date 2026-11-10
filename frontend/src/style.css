@@ -126,6 +126,22 @@ button { font: inherit; cursor: pointer; }
   background: #fff; color: var(--ink);
 }
 .chips button:hover { border-color: var(--brand); background: #eef5fa; }
+.chips button { transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease; }
+.chips button:active { transform: scale(0.97); }
+.chips button.chosen, .chips button.chosen:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+.chips .tick { margin-right: 0.35rem; font-weight: 700; }
+.reply {
+  max-width: 30rem; margin: 0.3rem auto 0; padding: 0.8rem 1rem; text-align: left;
+  border: 1px solid var(--line); border-left: 4px solid var(--cue-edge); border-radius: 14px; background: #f7fafc;
+}
+.reply p { margin: 0 0 0.3rem; }
+.reply .source { font-size: 0.78rem; color: var(--muted); }
+.reply-action { margin: 0.4rem 0 0.5rem; min-height: 44px; }
+.reply-sources { font-size: 0.82rem; color: var(--muted); }
+.reply-sources a { color: var(--brand); }
+.feedback-status { min-height: 1.4em; margin: 0.2rem 0 0; color: var(--muted); }
+.problem-text { color: #7d1d17; }
+@media (prefers-reduced-motion: reduce) { .chips button { transition: none; } .chips button:active { transform: none; } }
 .actions { display: grid; gap: 0.6rem; margin-top: 0.6rem; }
 .card {
   background: var(--surface); border: 1px solid var(--line); border-radius: 20px;

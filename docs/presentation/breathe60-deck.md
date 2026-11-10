@@ -48,25 +48,25 @@ Press Start. Let two breaths run. "The orb carries the pace, so Alex doesn't hav
 
 @card
 # Why it looks like this
-Each choice comes from the study's findings (15 patients, 13 clinicians).
+Every choice comes from the class research study (15 patients, 13 clinicians). The small codes in brackets, like R1 or D4, are the study's labels for each finding.
 
 :::boxes
-### R1 · Under 90 seconds {icon=clock}
-People drift after 90 to 100 s. Six breaths take 60 s, measured.
-### R2 + D4 · Support never moves {icon=shield}
-In the top bar on every screen, even mid-exercise.
-### R3 · Permission to stop {icon=door-open}
-Stop is one press and leaving costs nothing.
-### D2 + D3 · One thing, low effort {icon=target}
-One action per screen. No typing to do the skill.
-### D6 · Calm, not cheerful {icon=leaf}
-Soft colors, slow motion, plain words, no praise.
-### R4 · Alex decides {icon=hand}
-Options are offered, never forced.
+### Keep it short {icon=clock}
+People lose focus after about 90 seconds, so the exercise takes 60. (R1)
+### Help is always one tap away {icon=shield}
+The Support button stays in the top bar, even during the exercise. (R2, D4)
+### Stopping is always fine {icon=door-open}
+One press stops it. No warning, nothing lost. (R3)
+### One thing at a time {icon=target}
+One main button per screen, and no typing. (D2, D3)
+### Calm, not cheerful {icon=leaf}
+Soft colors, slow motion, plain words, no "Great job!". (D6)
+### You choose {icon=hand}
+The app suggests. Alex decides. (R4)
 :::
 
 :::notes
-Name the code as you point: R1 timing, R2 and D4 support, R3 stop, D2 and D3 one action and low effort, D6 tone, R4 choice.
+Say once: "The codes are the labels from the class research study, so you can match each choice to a finding." Then walk the boxes in plain words: short, help always there, stopping is fine, one thing at a time, calm, you choose.
 :::
 
 @card layout=right image="/media/129285448779bfc477b5.png"

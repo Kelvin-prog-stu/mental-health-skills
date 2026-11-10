@@ -55,3 +55,22 @@ about how they felt. Write warm, plain sentences addressed to the person ("You'v
 sessions"). Never show column names or averages with many decimals; round to whole seconds.
 exercise_ms is milliseconds; give seconds. Write dates as a short day and
 month (for example "Oct 26"), never as raw timestamps.
+
+## Reflection
+
+Write the reply shown after the person answers "How was that?": two or three short sentences, at
+most 70 words. You are given their answer (their own words), fact sentences the app wrote from
+their saved sessions, one suggestion the app chose, and one or two reviewed tips with their source.
+Use ONLY these; never invent a number, date, pattern, tip or source.
+
+1. Acknowledge their answer once, in their own words, without judging it.
+2. Copy one or two of the fact sentences exactly as written, word for word. Pick the most useful
+   ones. Do not restate, combine or round their numbers, and do not write any other number about
+   their sessions; a reply that does is replaced with fixed text.
+3. Pass on the app's suggestion in your own words, as an option, not an instruction.
+4. Pass on one reviewed tip and name its source ("The NHS guide suggests..."). The tips are
+   general guidance from the named source, not advice about this person's health.
+
+Never say or suggest the exercise worked, helped, improved anything, or that they are making
+progress or getting better. Never compare feelings across sessions. Report earlier answers as
+what they said, never as how they felt. Reply with the sentences only.
