@@ -1,6 +1,6 @@
 # Scenarios, MOCK model
 
-Run 2026-11-02T22:27:52-06:00 by `backend/checks/scenarios.py` on a throwaway database. Fictional user Alex. Model calls made: 0 (mock; any live call fails the run).
+Run 2026-11-10T16:06:05-05:00 by `backend/checks/scenarios.py` on a throwaway database. Fictional user Alex. Model calls made: 0 (mock; any live call fails the run).
 
 | # | Scenario | Expected | Observed | Result |
 | --- | --- | --- | --- | --- |
@@ -11,10 +11,10 @@ Run 2026-11-02T22:27:52-06:00 by `backend/checks/scenarios.py` on a throwaway da
 | S5 | Alex pauses for about 7 s in the middle, then finishes. | Paused time is saved apart; the measured exercise time stays about 60 s. | exercise_ms=60020, paused_ms=7400 | PASS |
 | S6 | Alex presses Stop after 2 breaths. | Saved as stopped with 2 breaths, never as completed; a later 'completed' is refused. | ('stopped', 2); later completion HTTP 409 | PASS |
 | S7 | Alex taps 'About the same', then changes it to 'Not sure'. | One answer row for the session, holding the latest choice. | [('not_sure',)] | PASS |
-| S8 | After four finished 6-breath sessions, Alex answers 'About the same'. | Reply names the answer and real counts, offers 8 breaths as an option, links its tip source; numbers come from the records. | (mock) You said about the same. You have 6 sessions saved. 8 breaths (80 seconds) is there if you want a little longer next time. (mock reply) / action={'label': 'Try 8 breaths', 'breaths': 8, 'cue': 'circle'} / sources= | PASS |
-| S9 | Alex stops an 8-breath session after 3 breaths and answers 'Not sure'. | Reply offers the shorter 6 breaths and mentions Pause; it does not judge stopping. | (mock) You said not sure. You have 7 sessions saved. 6 breaths is shorter if 8 felt long. The Pause button keeps your place if you need a moment. (mock reply) / action={'label': 'Try 6 breaths', 'breaths': 6, 'cue': 'cir | PASS |
+| S8 | After four finished 6-breath sessions, Alex answers 'About the same'. | Reply names the answer and real counts, offers 8 breaths as an option, links its tip source; numbers come from the records. | (mock) You said about the same. You have finished 5 of your 6 saved sessions. 8 breaths (80 seconds) is there if you want a little longer next time. (mock reply) / action={'label': 'Try 8 breaths', 'breaths': 8, 'cue': ' | PASS |
+| S9 | Alex stops an 8-breath session after 3 breaths and answers 'Not sure'. | Reply offers the shorter 6 breaths and mentions Pause; it does not judge stopping. | (mock) You said not sure. You have finished 5 of your 7 saved sessions. 6 breaths is shorter if 8 felt long. The Pause button keeps your place if you need a moment. (mock reply) / action={'label': 'Try 6 breaths', 'breat | PASS |
 | S10 | Alex answers while the model service is failing. | Fixed text with the app's own suggestion, labelled fixed; the failure is saved; no invented model reply. | You said not sure. 6 breaths is shorter if 8 felt long. The Pause button keeps your place if you need a moment. / steps=['question:ok', 'executed_sql:ok', 'retrieval_result:ok', 'error:failed', 'answer:fixed_text'] | PASS |
-| S11 | In History Alex asks: 'How many sessions did I finish?' | Answered from the rows a read-only query returned, with the query shown. | (answered) From your saved records: [{"completed_sessions": 5, "last_started": "2026-11-03T04:27:51.043+00:00"}] (mock reply) / rows=[[5, '2026-11-03T04:27:51.043+00:00']] | PASS |
+| S11 | In History Alex asks: 'How many sessions did I finish?' | Answered from the rows a read-only query returned, with the query shown. | (answered) From your saved records: [{"completed_sessions": 5, "last_started": "2026-11-10T21:06:04.009+00:00"}] (mock reply) / rows=[[5, '2026-11-10T21:06:04.009+00:00']] | PASS |
 | S12 | Alex types 'I can't go on anymore' in History. | No model call; Support opens; the fixed reply points to Support and 911. | status=blocked; open_support=True; model calls made=0 | PASS |
 | S13 | Alex asks the history chat to 'delete all my sessions'. | No write runs; the saved sessions are unchanged. | status=rejected; records unchanged=True | PASS |
 | S14 | Alex asks about the weather. | An honest 'your saved sessions can't answer that', no invented weather. | (insufficient_data) Your saved sessions can't answer that. mock: not about saved sessions | PASS |

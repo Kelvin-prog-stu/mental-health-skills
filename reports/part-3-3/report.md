@@ -11,13 +11,13 @@ Kelvin Asiedu, IST 402.
 
 | Evidence | Link |
 | --- | --- |
-| Demonstration of the finished app | {DEMO_LINK} |
-| Process screencast: one failure, the evidence, the decision | {PROCESS_LINK} |
+| Demonstration of the finished app | [docs/demo/a3-part3-demo.mp4](../../docs/demo/a3-part3-demo.mp4) (captioned, no audio) |
+| Process screencast: one failure, the evidence, the decision | [docs/demo/a3-part3-process.mp4](../../docs/demo/a3-part3-process.mp4) (captioned, no audio) |
 | 15 scenarios and 3 behavior checks, MOCK | [docs/evidence/scenarios/scenarios-mock.md](../../docs/evidence/scenarios/scenarios-mock.md) |
 | The same, LIVE (two runs) | [docs/evidence/scenarios/scenarios-live.md](../../docs/evidence/scenarios/scenarios-live.md) |
 | Verification record, Part 3.3 section | [docs/verification.md](../../docs/verification.md) |
 | Scenario runner | [backend/checks/scenarios.py](../../backend/checks/scenarios.py) |
-| Backend checks (44, MOCK) | [backend/checks/check_app.py](../../backend/checks/check_app.py) |
+| Backend checks (46, MOCK) | [backend/checks/check_app.py](../../backend/checks/check_app.py) |
 | Design and every change since Part 3.1 | [docs/design-pipeline.md](../../docs/design-pipeline.md), sections 13 and 14 |
 | The model's instructions | [prompts/breathing-guide.md](../../prompts/breathing-guide.md) |
 | Reviewed tips and their sources | [backend/breathing_tips.py](../../backend/breathing_tips.py) |
@@ -74,13 +74,17 @@ The behavior checks: **B1** no saved model reply breaks the wording rules, and n
 blocked request ever gets an invented reply; **B2** model calls never change observed records;
 **B3** every completed sequence fits 90 seconds with pauses counted apart (longest: 60.0 s).
 
-**A surprising finding.** I added a check that every number in the reply must appear in the
-facts the model was given. A live reply still said "which is what you have said 4 times out of
-your 17 recent sessions". Both numbers were real: 4 earlier answers and 17 saved sessions. The
-model joined them into a claim that was false, and my check passed it because it only looks at
-numbers one at a time. Checking numbers catches invented numbers, not wrong combinations. I
-reworded the facts so each count says what it counts ("Of their earlier answers (4 given)...")
-and the next replies kept them apart, but nothing in the code guarantees that.
+**A surprising finding.** My first guard checked that every number in a reply appeared somewhere
+in the facts the model was given. A live reply still said "which is what you have said 4 times out
+of your 17 recent sessions": both numbers were real (4 earlier answers, 17 sessions), joined into a
+false claim. I reworded the facts so each count said what it counted, and it seemed fixed. Then,
+while recording the demo on Nov 10, a reply said "You have 5 completed sessions saved out of 5
+total" when Alex had 4 finished and 1 stopped. 5 was a real number, so the guard passed it again.
+Rewording was not enough; the model will recombine any numbers it is given. Now the app writes the
+fact sentences itself ("You have finished 4 of your 6 saved sessions."), the model has to copy at
+least one word for word, and any other number in the reply, in digits or in words, must come from
+the app's suggestion or the tip. That exact wrong reply is now refused, and a backend check keeps it
+that way. Three live replies after the change all copied the sentence correctly.
 
 **A limitation I have not tested.** Whether the tips are useful or welcome to anyone. They are
 accurate to their sources, but this project cannot test them on real people, and the evaluation
@@ -102,36 +106,54 @@ Every reply is saved with the query and records it used.
 
 ## A piece of generated code, explained
 
-`backend/assistant.py`, `_numbers_grounded`:
+`backend/assistant.py`, `_facts_quoted`, the guard that came out of the surprising finding:
 
 ```python
-def _numbers_grounded(text: str, context: str) -> bool:
-    known = set(re.findall(r"\d+(?:\.\d+)?", context))
-    return all(n in known for n in re.findall(r"\d+(?:\.\d+)?", text))
+def _facts_quoted(text: str, facts: list[str], allowed: str) -> bool:
+    reply = _quote_key(text)
+    quoted = [f for f in facts if _quote_key(f).rstrip(".") in reply]
+    if not quoted:
+        return False
+    for fact in quoted:
+        reply = reply.replace(_quote_key(fact).rstrip("."), " ")
+    return _numbers_grounded(reply, allowed)
 ```
 
-It collects every number in the facts sent to the model, then requires every number in the reply
-to be one of them. If the model writes "You have 9 sessions" when the facts say 2, the reply is
-refused and the fixed text is shown, and the failure is saved. The regular expression also matches
-decimals, so "1.5 minutes" is checked as 1.5 rather than as 1 and 5. Its limit is the surprising
-finding above: it checks each number on its own, not what the sentence claims about it. Number
-words like "four" are not checked either.
+`facts` are the sentences the app wrote from the saved sessions, so their numbers are right by
+construction. `_quote_key` lowercases and turns curly or double quotes into one kind, so a copied
+sentence still matches if the model changes quote marks. The function first requires at least one
+fact sentence to appear in the reply; a reply with none is refused. It then removes the copied
+sentences and checks what is left with `_numbers_grounded`, which finds numbers written as digits
+or as words ("five", "twice") and requires each to appear in `allowed`, the app's suggestion and
+tip text. So "8 breaths" (from the suggestion) or "5 minutes" (from the NHS tip) are fine, while
+"5 completed sessions" restated by the model is refused. When it returns False the reply is
+replaced by the app's own fixed sentence and the failure is saved. Its limit: a number that also
+appears in the suggestion or a tip (such as 5 from the NHS tip) could still be misused.
 
 ## Recordings
 
-- **Demonstration:** {DEMO_NOTE}
+- **Demonstration:** recorded on 2026-11-10 with the live model in headless Chrome by the
+  coding agent, with captions as recording notes; it is not a recording of me using the app. Before
+  recording, four fictional earlier sessions were added through the app's own API
+  (`docs/evidence/seed_demo.py`) so the profile and the reply have a history to use. It shows the
+  check-in and contraction, the exercise with Pause and Support, the answer and the grounded reply
+  with its sources, History with a question answered from saved rows, crisis wording opening
+  Support, and the model-failure mode. Recorder: `docs/evidence/demo_record_3_3.mjs`.
 - **Process screencast (failure, evidence, decision):** a live reply was saved as "You noted this
   felt about the same. You have logged 145 seconds of breathing time across 15 sessions today. If
   you want" and stopped there. The evidence: the saved row in `messages` ended mid-sentence, and a
   direct call to each model in the fallback chain showed that 3.5 Flash-Lite took 13 s (past the
   12 s limit), so requests were falling through to other models. The decision: refuse any reply
   whose finish reason is not STOP, so a cut-off reply is never saved as complete, and shorten each
-  model's wait to 8 s so the next model starts sooner. {PROCESS_NOTE}
+  model's wait to 8 s so the next model starts sooner. The video is built from the real outputs (the saved row, the timing
+  probe, the code change, a scenario run) by `docs/evidence/process_record.mjs`, also recorded by the
+  agent with captions. It ends with the surprising finding and the guard explained above.
 
 ## What remains unresolved
 
 - The tips are a short fixed list. Adding one means reading the source again and adding it by hand.
-- The number check cannot catch true numbers joined into a false claim (see above).
+- The fact-sentence guard cannot stop a number that also appears in the suggestion or a tip from
+  being misused (see above).
 - Not verified: another computer, a screen reader, Firefox or Safari, a real phone, a person's
   entry time, and the reply's wording across many live runs.
 - The Figma capture round trip from the class activity was not done; the design was refined in
@@ -144,4 +166,5 @@ words like "four" are not checked either.
 Built and checked with Claude Code running Claude Opus 5.5 (`claude-opus-5-5`); the app's model is
 Gemini `gemini-3.5-flash-lite` with fallbacks. The agent wrote the code, the scenario runner, the
 checks and this report draft from my decisions, and read the three tip sources on the web. Failed
-and revised approaches are in AI-USE.md entries 1 to 15. No credentials are in the repository.
+and revised approaches are in AI-USE.md entries 1 to 16. Both videos were recorded by the agent
+in headless Chrome with captions, not by me narrating. No credentials are in the repository.

@@ -114,9 +114,17 @@ headless-Chrome scripts used in that project.
     it counts. Then it wrote `checks/scenarios.py` (15 scenarios, 3 behavior checks); the first live
     run failed one scenario on a network error and the rerun passed, and both are recorded.
 
+16. **Revised again: rewording the facts was not enough (Nov 10).** While the agent recorded the
+    demo, a live reply said "You have 5 completed sessions saved out of 5 total" when Alex had 4
+    finished and 1 stopped; the number check passed it because 5 was real. The agent dropped that
+    take, made the app write the fact sentences itself, required the model to copy one word for
+    word, and refused any other number (digits or words) not in the suggestion or tip. Checks
+    46 of 46; three live replies copied the sentence correctly; the demo was recorded again.
+
 ### Part 3.3 (2026-11-02 and 03)
 
 Tool and model: Claude Code with Claude Opus 5.5 (`claude-opus-5-5`). It read three tip sources on
 the web (NHS breathing exercises for stress, Cleveland Clinic diaphragmatic breathing, Balban et
 al. 2023 on PMC) and kept only what each page says, with links. It ran the clean-checkout test
-and drafted the Part 3.3 report. I chose what to build and reviewed the replies.
+and drafted the Part 3.3 report. On Nov 10, at my request, it recorded both Part 3.3 videos
+(captioned, no audio) in headless Chrome. I chose what to build and reviewed the replies.

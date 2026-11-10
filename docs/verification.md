@@ -55,6 +55,17 @@ succeeded. Same machine, so this does not prove another computer works; see "Not
 An earlier version said "4 times out of your 17 recent sessions", joining two separate facts
 (answers given and sessions saved). The facts were reworded so each count says what it counts.
 
+### Demo recording and a second wrong count (2026-11-10)
+
+The first demo take (live model) showed the reply "You have 5 completed sessions saved out of 5
+total"; the saved rows had 4 completed and 1 stopped. The take was dropped. After the fix (the app
+writes the fact sentences and the model must copy one; `_facts_quoted`), `check_app.py` passed 46
+of 46, three live replies on the same data said "You have finished 4 of your 6 saved sessions.",
+and the final take's reply said "Before this one, you answered 'about the same' 2 times.", which
+matches the two seeded answers. The values the recorder read from the page are in
+[demo-3-3-observed.json](evidence/demo-3-3-observed.json). The History answer in the take
+("finished 4 sessions and stopped 1") matches the rows it shows.
+
 ### Not verified yet (Part 3.3)
 
 Another computer; a screen reader; Firefox or Safari; a real phone; a human's entry time; the
