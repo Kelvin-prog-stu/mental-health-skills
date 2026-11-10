@@ -68,7 +68,7 @@ and observed results are in the scenario tables.
 | LIVE, first run | 17 of 18: S14 hit a network error on the way to Gemini; the app said so and invented nothing |
 | LIVE, rerun | 18 of 18, 7 model calls |
 | Screen checks V1 to V6 in the browser | All as expected; one timing caveat noted in the record |
-| Clean checkout from the README | Installs, 44 of 44 and 18 of 18 checks, runs without a key, frontend builds |
+| Clean checkout from the README (Nov 3) | Installs, 44 of 44 (the count then) and 18 of 18 checks, runs without a key, frontend builds |
 
 The behavior checks: **B1** no saved model reply breaks the wording rules, and no failed or
 blocked request ever gets an invented reply; **B2** model calls never change observed records;
