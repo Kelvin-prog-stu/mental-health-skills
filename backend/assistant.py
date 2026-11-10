@@ -128,10 +128,10 @@ def _mock_generate(stage: str, user: str) -> str:
         return json.dumps({"sql": sql, "reason": "mock: counts saved sessions"})
     if stage == "reflection":
         answer = re.search(r"answer to this session: '([^']+)'", user)
-        count = re.search(r"Saved sessions in total: (\d+)", user)
+        fact = re.search(r"word for word\):\n- (.+)", user)
         suggestion = re.search(r"Suggestion chosen by the app: (.+)", user)
-        return (f"You said {answer.group(1) if answer else 'something'}. You have "
-                f"{count.group(1) if count else 'some'} sessions saved. {suggestion.group(1) if suggestion else ''} (mock reply)")
+        return (f"You said {answer.group(1) if answer else 'something'}. {fact.group(1) if fact else ''} "
+                f"{suggestion.group(1) if suggestion else ''} (mock reply)")
     records = user.split("Records:", 1)[-1].strip()
     return f"From your saved records: {records[:160]} (mock reply)"
 
@@ -187,16 +187,14 @@ def intro(mode: str = "live") -> dict:
 
 def _reflection_context(session: dict, plan: dict) -> str:
     profile = db.get_profile()
-    usual = profile["usual"]
     checkin = profile["current_checkin"]
     words = {"steady": "steady", "tense": "a bit tense", "overwhelmed": "overwhelmed"}
     tips = "\n".join(f"- ({SOURCE_SHORT[t['source']]}) {t['text']}" for t in plan["tips"])
     return "\n".join([
         f"Name: Alex. Their answer to this session: '{SELF_REPORT_WORDS[session['self_report']]}'.",
-        "Facts from their saved sessions:",
+        "Fact sentences (copy one or two of these word for word):",
         *(f"- {f}" for f in plan["facts"]),
-        "- Usual choice: " + (f"{usual['breaths']} breaths, {usual['cue']} cue" if usual else "none yet") + ".",
-        "- Today's check-in, their own words: " + (f"'{words[checkin['feeling']]}'" if checkin else "none") + ".",
+        "Today's check-in, their own words: " + (f"'{words[checkin['feeling']]}'" if checkin else "none") + ".",
         f"Suggestion chosen by the app: {plan['suggestion']}",
         "Reviewed tips (name the source if you use one):",
         tips,
@@ -206,10 +204,39 @@ def _reflection_context(session: dict, plan: dict) -> str:
 SOURCE_SHORT = {"nhs": "NHS", "cleveland": "Cleveland Clinic", "balban": "2023 Stanford study"}
 
 
+NUMBER_WORDS = {w: str(i) for i, w in enumerate(
+    "zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen "
+    "sixteen seventeen eighteen nineteen twenty".split())}
+NUMBER_WORDS.update({"once": "1", "twice": "2"})
+
+
+def _numbers_in(text: str) -> list[str]:
+    """Numbers written as digits or as words ("five", "twice")."""
+    found = re.findall(r"\d+(?:\.\d+)?", text)
+    found += [NUMBER_WORDS[w] for w in re.findall(r"[a-z]+", text.lower()) if w in NUMBER_WORDS]
+    return found
+
+
 def _numbers_grounded(text: str, context: str) -> bool:
     """Every number in the reply must appear in the facts it was given."""
-    known = set(re.findall(r"\d+(?:\.\d+)?", context))
-    return all(n in known for n in re.findall(r"\d+(?:\.\d+)?", text))
+    known = set(_numbers_in(context))
+    return all(n in known for n in _numbers_in(text))
+
+
+def _quote_key(text: str) -> str:
+    return re.sub(r"[\"'\u2018\u2019\u201c\u201d]", "'", text.lower())
+
+
+def _facts_quoted(text: str, facts: list[str], allowed: str) -> bool:
+    """At least one of the app's fact sentences is copied word for word, and any other number in
+    the reply comes from the suggestion or the tips, never restated from the session counts."""
+    reply = _quote_key(text)
+    quoted = [f for f in facts if _quote_key(f).rstrip(".") in reply]
+    if not quoted:
+        return False
+    for fact in quoted:
+        reply = reply.replace(_quote_key(fact).rstrip("."), " ")
+    return _numbers_grounded(reply, allowed)
 
 
 def reflect(session_id: int, mode: str = "live") -> dict:
@@ -227,14 +254,15 @@ def reflect(session_id: int, mode: str = "live") -> dict:
         rows = [dict(zip(found.columns, r)) for r in found.rows]
         save("tool", "executed_sql", REFLECTION_QUERY)
         save("tool", "retrieval_result", json.dumps({"columns": list(found.columns), "rows": [list(r) for r in found.rows]}, default=str))
-        plan = breathing_tips.build(session, rows)
+        plan = breathing_tips.build(session, rows, db.get_profile()["usual"])
         context = _reflection_context(session, plan)
         text = _generate(mode, "reflection", PROMPTS["reflection"], context).strip()
         plain = text.replace("(mock reply)", "")
         if not text or _words(text) > REFLECTION_MAX_WORDS or BANNED.search(plain) or REFLECTION_BANNED.search(plain):
             raise llm_client.LlmBadOutputError("The model's reply broke a length or wording rule.")
-        if not _numbers_grounded(plain, context):
-            raise llm_client.LlmBadOutputError("The model's reply used a number that is not in the saved records or tips.")
+        allowed = plan["suggestion"] + " " + " ".join(t["text"] for t in plan["tips"])
+        if not _facts_quoted(plain, plan["facts"], allowed):
+            raise llm_client.LlmBadOutputError("The model's reply did not copy a fact sentence, or restated a number on its own.")
     except (llm_client.LlmError, retrieval.QueryRejectedError, retrieval.QueryFailedError) as exc:
         # The fixed text still carries the app's own suggestion, so a model failure loses only the wording.
         fixed = f"You said {word}. {plan['suggestion']}" if plan else FIXED_REFLECTIONS[session["self_report"]]

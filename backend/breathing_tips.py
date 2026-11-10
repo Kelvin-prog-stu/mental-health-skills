@@ -45,7 +45,11 @@ def _local_day(iso: str | None) -> datetime | None:
     return datetime.fromisoformat(iso).astimezone()
 
 
-def build(session: dict, rows: list[dict]) -> dict:
+def _count(n: int, noun: str) -> str:
+    return f"{n} {noun}" if n == 1 else f"{n} {noun}s"
+
+
+def build(session: dict, rows: list[dict], usual: dict | None = None) -> dict:
     """`session` is this session (with its self_report); `rows` are the person's saved sessions,
     newest first, from the read-only query. Returns facts, one suggestion, tips and sources."""
     now = datetime.now().astimezone()
@@ -59,18 +63,17 @@ def build(session: dict, rows: list[dict]) -> dict:
     stopped_early = session["status"] == "stopped"
     completed_six = sum(1 for r in completed[:5] if r["planned_breaths"] == 6)
 
-    facts = [
-        f"This session: {session['status']}, {session['breaths_done']} of {session['planned_breaths']} breaths, "
-        f"{session['cue']} cue, about {round((session['exercise_ms'] or 0) / 1000)} seconds measured.",
-        f"Saved sessions in total: {len(rows)} ({len(completed)} completed, {len(rows) - len(completed)} stopped).",
-        f"Sessions in the last 7 days: {len(week)}. Sessions today: {len(today)}.",
-        (f"Breathing time saved today: {seconds_today} seconds (about {minutes_today} minutes)."
-         if seconds_today else "No breathing time saved today yet."),
-    ]
+    # Fact sentences written by the app, so every count in them is right. The model must copy at
+    # least one word for word instead of restating the numbers itself (it once turned "4 finished,
+    # 1 stopped" into "5 completed out of 5").
+    facts = [f"You have finished {len(completed)} of your {_count(len(rows), 'saved session')}."]
     if earlier_answers:
         top, count = earlier_answers.most_common(1)[0]
-        given = sum(earlier_answers.values())
-        facts.append(f"Of their earlier 'How was that?' answers ({given} given), '{top.replace('_', ' ')}' was the answer {count} times.")
+        facts.append(f"Before this one, you answered '{top.replace('_', ' ')}' {_count(count, 'time')}.")
+    if seconds_today:
+        facts.append(f"You have about {minutes_today} minutes of breathing saved today.")
+    if usual:
+        facts.append(f"Your usual is {usual['breaths']} breaths with the {usual['cue']} cue.")
 
     # One suggestion, chosen by fixed rules. Each one is something the app can really do.
     if stopped_early and session["planned_breaths"] == 8:
@@ -92,9 +95,6 @@ def build(session: dict, rows: list[dict]) -> dict:
     else:
         suggestion = ("Your usual setting is ready whenever you come back.", None)
         tip_ids = ["balban_daily"]
-    facts.append(f"Daily guide used for comparison: {DAILY_MINUTES_GUIDE} minutes (NHS).")
-    if not stopped_early:
-        facts.append(f"About {max(0, round(DAILY_MINUTES_GUIDE - minutes_today, 1))} minutes left to reach that guide today.")
 
     tips = [{"id": t, "text": TIPS[t][1], "source": TIPS[t][0]} for t in tip_ids]
     return {

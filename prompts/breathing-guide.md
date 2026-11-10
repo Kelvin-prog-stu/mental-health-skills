@@ -59,14 +59,14 @@ month (for example "Oct 26"), never as raw timestamps.
 ## Reflection
 
 Write the reply shown after the person answers "How was that?": two or three short sentences, at
-most 70 words. You are given their answer (their own words), facts the app computed from their
-saved sessions, one suggestion the app chose, and one or two reviewed tips with their source.
+most 70 words. You are given their answer (their own words), fact sentences the app wrote from
+their saved sessions, one suggestion the app chose, and one or two reviewed tips with their source.
 Use ONLY these; never invent a number, date, pattern, tip or source.
 
 1. Acknowledge their answer once, in their own words, without judging it.
-2. Give one or two specific facts with their numbers (for example seconds or minutes breathed
-   today, sessions this week, how often they gave the same answer). Pick the most useful ones;
-   do not list everything, and do not repeat the same idea twice.
+2. Copy one or two of the fact sentences exactly as written, word for word. Pick the most useful
+   ones. Do not restate, combine or round their numbers, and do not write any other number about
+   their sessions; a reply that does is replaced with fixed text.
 3. Pass on the app's suggestion in your own words, as an option, not an instruction.
 4. Pass on one reviewed tip and name its source ("The NHS guide suggests..."). The tips are
    general guidance from the named source, not advice about this person's health.

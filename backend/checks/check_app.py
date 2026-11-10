@@ -136,7 +136,7 @@ with TestClient(main.app) as c:
     # ---- Reply after "How was that?" ----------------------------------------------------
     before_reply = snapshot()
     reply = c.post(f"/api/sessions/{sid}/reflection", params={"mode": "mock"}).json()
-    check("the reply uses the person's own answer and the saved session count", reply["source"] == "mock" and "not sure" in reply["text"] and "2 sessions" in reply["text"], reply["text"])
+    check("the reply uses the person's own answer and the saved session count", reply["source"] == "mock" and "not sure" in reply["text"] and "of your 2 saved sessions" in reply["text"], reply["text"])
     check("the reply names the saved records it was built from", sorted(reply["records"]) == [sid, s2], reply["records"])
     reply_steps = [r[0] for r in rows("SELECT stage FROM messages WHERE conversation_id = ? ORDER BY message_id", reply["conversation_id"])]
     check("the reply is saved with the query and records it used", reply_steps == ["question", "executed_sql", "retrieval_result", "answer"], reply_steps)
@@ -153,6 +153,9 @@ with TestClient(main.app) as c:
     check("no reply before the person answers (422)", c.post(f"/api/sessions/{s2}/reflection", params={"mode": "mock"}).status_code == 422, "422")
     check("asking for a reply changes no session or answer", snapshot() == before_reply, "unchanged")
     check("a reply with a number not in the records is refused", not assistant._numbers_grounded("You have 9 sessions.", "Saved sessions in total: 2"), "refused")
+    facts = ["You have finished 4 of your 5 saved sessions."]
+    check("a reply that restates the counts wrongly is refused (Nov 10: '5 completed out of 5')", not assistant._facts_quoted("You have 5 completed sessions saved out of 5 total.", facts, "8 breaths"), "refused")
+    check("a reply that copies the app's fact sentence is accepted", assistant._facts_quoted("You said not sure. You have finished 4 of your 5 saved sessions. 8 breaths is there.", facts, "8 breaths"), "accepted")
     check("a reply that claims the exercise helped is refused", bool(assistant.REFLECTION_BANNED.search("This is helping you make progress.")), "refused")
 
     # ---- Health and persistence --------------------------------------------------------
